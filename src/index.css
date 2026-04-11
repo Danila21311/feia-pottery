@@ -1,0 +1,192 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Feia Pottery Workshop Design System 
+Elegant earth-tone palette with organic ceramics aesthetic
+*/
+
+@layer base {
+  :root {
+    /* Base colors - warm whites and creams */
+    --background: 34 39% 97%;        /* Warm cream white #faf8f5 */
+    --foreground: 27 18% 25%;        /* Deep warm brown #433a34 */
+
+    /* Card and surfaces */
+    --card: 34 39% 97%;
+    --card-foreground: 27 18% 25%;
+
+    --popover: 34 39% 97%;
+    --popover-foreground: 27 18% 25%;
+
+    /* Primary - sage green from palette */
+    --primary: 159 21% 35%;          /* Sage green #4a6b5f */
+    --primary-foreground: 34 39% 97%; /* Cream white for good contrast */
+
+    /* Secondary - warm beige tones */
+    --secondary: 37 25% 89%;         /* Light beige #f5f0e6 */
+    --secondary-foreground: 27 18% 25%;
+
+    /* Muted backgrounds */
+    --muted: 37 25% 89%;             /* Light beige #f5f0e6 */
+    --muted-foreground: 27 18% 45%;  /* Darker brown for better contrast */
+
+    /* Accent - deeper beige */
+    --accent: 40 20% 84%;            /* Deeper beige #e8dcc5 */
+    --accent-foreground: 27 18% 25%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 34 39% 97%;
+
+    /* Borders and inputs - subtle beige */
+    --border: 40 20% 84%;            /* Matching accent */
+    --input: 40 20% 84%;
+    --ring: 159 21% 35%;             /* Primary sage green */
+
+    --radius: 0.75rem;               /* Slightly more rounded */
+
+    /* Custom pottery theme colors */
+    --pottery-sage: 159 21% 35%;     /* Primary sage #4a6b5f */
+    --pottery-sage-light: 159 21% 45%; /* Lighter sage #6b8e7e */
+    --pottery-warm: 37 25% 89%;      /* Warm beige #f5f0e6 */
+    --pottery-earth: 40 20% 84%;     /* Earth beige #e8dcc5 */
+    --pottery-clay: 27 30% 70%;      /* Clay brown for accents */
+    
+    /* Gradients */
+    --gradient-hero: linear-gradient(135deg, hsl(var(--pottery-warm)), hsl(var(--pottery-earth)));
+    --gradient-card: linear-gradient(180deg, hsl(var(--background)), hsl(var(--pottery-warm)));
+    --gradient-sage: linear-gradient(135deg, hsl(var(--pottery-sage)), hsl(var(--pottery-sage-light)));
+    
+    /* Shadows - organic and soft */
+    --shadow-soft: 0 4px 20px -4px hsl(var(--pottery-sage) / 0.1);
+    --shadow-card: 0 8px 30px -8px hsl(var(--pottery-sage) / 0.15);
+    --shadow-hero: 0 20px 60px -20px hsl(var(--pottery-sage) / 0.2);
+    
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-body;
+    font-feature-settings: "liga", "kern";
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif;
+    font-feature-settings: "liga", "kern";
+  }
+}
+
+@layer components {
+  /* Pottery theme utility classes */
+  .pottery-gradient {
+    background: var(--gradient-hero);
+  }
+  
+  .pottery-card {
+    background: var(--gradient-card);
+    box-shadow: var(--shadow-card);
+    transition: var(--transition-smooth);
+  }
+  
+  .pottery-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hero);
+  }
+  
+  .sage-gradient {
+    background: var(--gradient-sage);
+  }
+  
+  .pottery-shadow {
+    box-shadow: var(--shadow-soft);
+  }
+  
+  .pottery-shadow-hero {
+    box-shadow: var(--shadow-hero);
+  }
+  
+  /* Smooth scroll */
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--pottery-warm));
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--pottery-sage));
+    border-radius: 4px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--pottery-sage-light));
+  }
+}
