@@ -7,23 +7,226 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.1"
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          id: string
+          name: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          name?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          user_id: string
+          role: Database["public"]["Enums"]["user_role"]
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          role?: Database["public"]["Enums"]["user_role"]
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      products: {
+        Row: {
+          id: string
+          name: string
+          price: number
+          category: string
+          images: Json
+          description: string | null
+          dimensions: string | null
+          care: string | null
+          in_stock: boolean
+          is_new: boolean
+          collection: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          name: string
+          price: number
+          category: string
+          images?: Json
+          description?: string | null
+          dimensions?: string | null
+          care?: string | null
+          in_stock?: boolean
+          is_new?: boolean
+          collection?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          price?: number
+          category?: string
+          images?: Json
+          description?: string | null
+          dimensions?: string | null
+          care?: string | null
+          in_stock?: boolean
+          is_new?: boolean
+          collection?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      workshops: {
+        Row: {
+          id: string
+          title: string
+          date: string
+          time: string
+          duration: string
+          format: string
+          price: number
+          max_participants: number
+          current_participants: number
+          description: string | null
+          includes: Json
+          level: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          title: string
+          date: string
+          time: string
+          duration: string
+          format: string
+          price: number
+          max_participants: number
+          current_participants?: number
+          description?: string | null
+          includes?: Json
+          level?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          title?: string
+          date?: string
+          time?: string
+          duration?: string
+          format?: string
+          price?: number
+          max_participants?: number
+          current_participants?: number
+          description?: string | null
+          includes?: Json
+          level?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      orders: {
+        Row: {
+          id: string
+          user_id: string | null
+          status: Database["public"]["Enums"]["order_status"]
+          total: number
+          items: Json
+          customer_name: string
+          customer_phone: string
+          customer_email: string
+          comment: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id?: string | null
+          status?: Database["public"]["Enums"]["order_status"]
+          total: number
+          items: Json
+          customer_name: string
+          customer_phone: string
+          customer_email: string
+          comment?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string | null
+          status?: Database["public"]["Enums"]["order_status"]
+          total?: number
+          items?: Json
+          customer_name?: string
+          customer_phone?: string
+          customer_email?: string
+          comment?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      order_status: "pending" | "processing" | "shipped" | "delivered" | "cancelled"
+      user_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never

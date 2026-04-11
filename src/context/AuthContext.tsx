@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { api, User, ApiError } from '@/lib/api';
 
 interface AuthContextType {
@@ -20,21 +21,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const isAdmin = user?.roles?.includes('admin') ?? false;
 
   const checkAuth = useCallback(async () => {
-    const token = localStorage.getItem('auth_token');
-    
-    if (!token) {
-      setUser(null);
-      setIsLoading(false);
-      return;
-    }
-
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setUser(null);
+        setIsLoading(false);
+        return;
+      }
       const { user } = await api.getMe();
       setUser(user);
-    } catch (error) {
-      if (error instanceof ApiError && error.status === 401) {
-        localStorage.removeItem('auth_token');
-      }
+    } catch {
       setUser(null);
     } finally {
       setIsLoading(false);
@@ -43,20 +39,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'SIGNED_OUT' || !session) {
+          setUser(null);
+          return;
+        }
+        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+          try {
+            const { user } = await api.getMe();
+            setUser(user);
+          } catch {
+            setUser(null);
+          }
+        }
+      }
+    );
+
+    return () => subscription.unsubscribe();
   }, [checkAuth]);
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      const { token } = await api.login(email, password);
-      localStorage.setItem('auth_token', token);
-
-      // Всегда подтягиваем актуального пользователя с ролями через /me,
-      // чтобы не зависеть от формы ответа /login.
-      const { user } = await api.getMe();
-      setUser(user);
+      const result = await api.login(email, password);
+      setUser(result.user);
     } catch (error) {
-      localStorage.removeItem('auth_token');
       setUser(null);
       throw error;
     } finally {
@@ -67,12 +76,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const register = async (email: string, password: string, name: string) => {
     setIsLoading(true);
     try {
-      const { token } = await api.register(email, password, name);
-      localStorage.setItem('auth_token', token);
-      const { user } = await api.getMe();
-      setUser(user);
+      const result = await api.register(email, password, name);
+      setUser(result.user);
     } catch (error) {
-      localStorage.removeItem('auth_token');
       setUser(null);
       throw error;
     } finally {
@@ -86,7 +92,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {
       // Ignore errors on logout
     } finally {
-      localStorage.removeItem('auth_token');
       setUser(null);
     }
   };
