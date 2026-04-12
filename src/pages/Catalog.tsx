@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Search, Filter } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { ProductCard } from '@/components/Shop/ProductCard';
 import { Product } from '@/context/StoreContext';
 import { Button } from '@/components/ui/button';
@@ -84,7 +84,7 @@ export default function Catalog() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-12">
       {/* Header */}
       <div className="text-center mb-12">
         <h1 className="text-4xl font-serif font-bold mb-4">Каталог керамики</h1>
@@ -140,7 +140,6 @@ export default function Catalog() {
             onClick={() => setShowOnlyNew(!showOnlyNew)}
             className="sage-gradient"
           >
-            <Filter className="w-4 h-4 mr-2" />
             Только новинки
           </Button>
         </div>

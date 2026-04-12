@@ -37,7 +37,7 @@ const levels = ['Начинающий', 'Продолжающий', 'Любой'
 export default function AdminWorkshopEdit() {
   const { id } = useParams();
   const isEditing = !!id;
-  const navigate = useRouter();
+  const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -94,7 +94,7 @@ export default function AdminWorkshopEdit() {
         })
         .finally(() => setIsLoading(false));
     }
-  }, [id, isEditing, reset, navigate, toast]);
+  }, [id, isEditing, reset, router, toast]);
 
   const onSubmit = async (data: WorkshopFormData) => {
     setIsSaving(true);
@@ -145,10 +145,10 @@ export default function AdminWorkshopEdit() {
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <div>
-          <h1 className="text-3xl font-serif font-semibold text-foreground">
+          <h1 className="text-2xl md:text-3xl font-serif font-semibold text-foreground">
             {isEditing ? 'Редактирование мастер-класса' : 'Новый мастер-класс'}
           </h1>
-          <p className="text-muted-foreground mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             {isEditing ? 'Измените данные мастер-класса' : 'Заполните данные нового мастер-класса'}
           </p>
         </div>
@@ -315,15 +315,17 @@ export default function AdminWorkshopEdit() {
           </CardHeader>
           <CardContent className="space-y-4">
             {fields.map((field, index) => (
-              <div key={field.id} className="flex gap-2">
+              <div key={field.id} className="flex gap-2 items-start">
                 <Input
                   placeholder="Все материалы, Обжиг изделия..."
+                  className="min-w-0"
                   {...register(`includes.${index}.item`)}
                 />
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon"
+                  className="shrink-0"
                   onClick={() => remove(index)}
                   disabled={fields.length === 1}
                 >
@@ -343,11 +345,11 @@ export default function AdminWorkshopEdit() {
         </Card>
 
         {/* Actions */}
-        <div className="flex gap-4">
-          <Button type="submit" disabled={isSaving}>
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+          <Button type="submit" disabled={isSaving} className="w-full sm:w-auto">
             {isSaving ? 'Сохранение...' : isEditing ? 'Сохранить изменения' : 'Создать мастер-класс'}
           </Button>
-          <Button type="button" variant="outline" onClick={() => router.push('/admin/workshops')}>
+          <Button type="button" variant="outline" className="w-full sm:w-auto" onClick={() => router.push('/admin/workshops')}>
             Отмена
           </Button>
         </div>

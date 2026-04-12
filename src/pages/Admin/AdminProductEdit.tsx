@@ -6,6 +6,7 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { api, Product, ApiError } from '@/lib/api';
+import { uploadImage } from '@/lib/cloudinary';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -13,7 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Plus, X, Upload } from 'lucide-react';
+import { ArrowLeft, Plus, X, Upload, Loader2 } from 'lucide-react';
 
 const productSchema = z.object({
   id: z.string().min(1, 'ID обязателен').regex(/^[a-z0-9-]+$/, 'Только строчные буквы, цифры и дефис'),
@@ -36,10 +37,11 @@ const categories = ['Посуда', 'Декор', 'Наборы', 'Горшки'
 export default function AdminProductEdit() {
   const { id } = useParams();
   const isEditing = !!id;
-  const navigate = useRouter();
+  const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
 
   const {
     register,
@@ -96,7 +98,24 @@ export default function AdminProductEdit() {
         })
         .finally(() => setIsLoading(false));
     }
-  }, [id, isEditing, reset, navigate, toast]);
+  }, [id, isEditing, reset, router, toast]);
+
+  const handleFileUpload = async (index: number, file: File) => {
+    setUploadingIndex(index);
+    try {
+      const result = await uploadImage(file, 'feia/products');
+      setValue(`images.${index}.url`, result.secure_url);
+      toast({ title: 'Фото загружено' });
+    } catch (error) {
+      toast({
+        title: 'Ошибка загрузки',
+        description: error instanceof Error ? error.message : 'Не удалось загрузить фото',
+        variant: 'destructive',
+      });
+    } finally {
+      setUploadingIndex(null);
+    }
+  };
 
   const onSubmit = async (data: ProductFormData) => {
     setIsSaving(true);
@@ -147,10 +166,10 @@ export default function AdminProductEdit() {
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <div>
-          <h1 className="text-3xl font-serif font-semibold text-foreground">
+          <h1 className="text-2xl md:text-3xl font-serif font-semibold text-foreground">
             {isEditing ? 'Редактирование товара' : 'Новый товар'}
           </h1>
-          <p className="text-muted-foreground mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             {isEditing ? 'Измените данные товара' : 'Заполните данные нового товара'}
           </p>
         </div>
@@ -292,20 +311,56 @@ export default function AdminProductEdit() {
           </CardHeader>
           <CardContent className="space-y-4">
             {fields.map((field, index) => (
-              <div key={field.id} className="flex gap-2">
-                <Input
-                  placeholder="URL изображения"
-                  {...register(`images.${index}.url`)}
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => remove(index)}
-                  disabled={fields.length === 1}
-                >
-                  <X className="w-4 h-4" />
-                </Button>
+              <div key={field.id} className="space-y-2">
+                <div className="flex gap-2 items-start">
+                  <Input
+                    placeholder="URL изображения"
+                    className="min-w-0"
+                    {...register(`images.${index}.url`)}
+                  />
+                  <label className="cursor-pointer">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleFileUpload(index, file);
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="shrink-0"
+                      disabled={uploadingIndex === index}
+                      asChild
+                    >
+                      <span>
+                        {uploadingIndex === index
+                          ? <Loader2 className="w-4 h-4 animate-spin" />
+                          : <Upload className="w-4 h-4" />}
+                      </span>
+                    </Button>
+                  </label>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="shrink-0"
+                    onClick={() => remove(index)}
+                    disabled={fields.length === 1}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+                {watch(`images.${index}.url`) && (
+                  <img
+                    src={watch(`images.${index}.url`)}
+                    alt={`Превью ${index + 1}`}
+                    className="h-24 w-24 object-cover rounded-md border"
+                  />
+                )}
               </div>
             ))}
             <Button
@@ -320,11 +375,11 @@ export default function AdminProductEdit() {
         </Card>
 
         {/* Actions */}
-        <div className="flex gap-4">
-          <Button type="submit" disabled={isSaving}>
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+          <Button type="submit" disabled={isSaving} className="w-full sm:w-auto">
             {isSaving ? 'Сохранение...' : isEditing ? 'Сохранить изменения' : 'Создать товар'}
           </Button>
-          <Button type="button" variant="outline" onClick={() => router.push('/admin/products')}>
+          <Button type="button" variant="outline" className="w-full sm:w-auto" onClick={() => router.push('/admin/products')}>
             Отмена
           </Button>
         </div>

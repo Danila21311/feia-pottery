@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
@@ -52,9 +52,14 @@ export default function Auth() {
   });
 
   // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      if (isAdmin) { router.replace('/admin'); }
+      else { router.replace(from === '/auth' ? '/profile' : from); }
+    }
+  }, [user, isAdmin, from, router]);
+
   if (user) {
-    if (isAdmin) { router.replace('/admin'); return null; }
-    router.replace(from === '/auth' ? '/profile' : from);
     return null;
   }
 

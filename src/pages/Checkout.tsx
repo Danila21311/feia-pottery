@@ -101,32 +101,45 @@ export default function Checkout() {
         return;
       }
 
-      // Initialize CloudPayments payment
+      // Initialize CloudPayments payment (new widget.start API)
       const widget = new window.cp.CloudPayments();
-      
-      widget.charge({
-        publicId: 'test_api_00000000000000000000002', // Тестовый ключ, заменить на реальный
+
+      const intentParams = {
+        publicTerminalId: 'test_api_00000000000000000000002', // Тестовый ключ, заменить на реальный
         description: 'Заказ в мастерской Feia',
         amount: finalTotal,
         currency: 'RUB',
-        invoiceId: Date.now().toString(),
-        email: customerData.email,
-        skin: 'mini',
-        data: {
+        paymentSchema: 'Single',
+        skin: 'modern',
+        culture: 'ru-RU',
+        externalId: Date.now().toString(),
+        userInfo: {
+          email: customerData.email,
+          phone: customerData.phone,
+          fullName: customerData.name,
+        },
+        metadata: {
           customerName: customerData.name,
-          customerPhone: customerData.phone
-        }
-      }, {
-        onSuccess: function() {
-          // Fire-and-forget DB save (non-blocking)
-          api.createOrder({
-            customerName: customerData.name,
-            customerPhone: customerData.phone,
-            customerEmail: customerData.email,
-            comment: customerData.comment,
-            items: state.cart,
-            total: finalTotal,
-          }).catch(() => console.warn('Could not save order to DB'));
+          customerPhone: customerData.phone,
+        },
+        autoClose: 3,
+      };
+
+      widget.oncomplete = async (result: any) => {
+        if (result.status === 'success') {
+          // Save order to DB before navigating away
+          try {
+            await api.createOrder({
+              customerName: customerData.name,
+              customerPhone: customerData.phone,
+              customerEmail: customerData.email,
+              comment: customerData.comment,
+              items: state.cart,
+              total: finalTotal,
+            });
+          } catch {
+            console.warn('Could not save order to DB');
+          }
 
           // Clear cart in both React state and localStorage directly
           dispatch({ type: 'CLEAR_CART' });
@@ -135,10 +148,13 @@ export default function Checkout() {
 
           // Use window.location for reliable navigation from payment widget callback
           window.location.href = '/checkout/success';
-        },
-        onFail: function() {
+        } else if (result.type !== 'cancel') {
           toast.error('Ошибка при оплате. Попробуйте еще раз.');
         }
+      };
+
+      widget.start(intentParams).catch(() => {
+        toast.error('Ошибка при оплате. Попробуйте еще раз.');
       });
 
     } catch (error) {
@@ -156,14 +172,14 @@ export default function Checkout() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-8">
         <Link href="/catalog">
           <Button variant="ghost" size="sm">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Назад в каталог
           </Button>
         </Link>
-        <h1 className="text-3xl font-serif font-bold">Оформление заказа</h1>
+        <h1 className="text-2xl md:text-3xl font-serif font-bold">Оформление заказа</h1>
       </div>
 
       <form onSubmit={handleSubmit} className="grid lg:grid-cols-3 gap-8">

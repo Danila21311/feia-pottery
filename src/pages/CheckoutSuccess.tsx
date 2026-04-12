@@ -16,7 +16,7 @@ export default function CheckoutSuccess() {
 
         {/* Title */}
         <div className="space-y-2">
-          <h1 className="text-3xl font-serif font-bold">Заказ успешно оформлен!</h1>
+          <h1 className="text-2xl md:text-3xl font-serif font-bold">Заказ успешно оформлен!</h1>
           <p className="text-lg text-muted-foreground">
             Спасибо за покупку в мастерской Feia
           </p>

@@ -240,24 +240,23 @@ class ApiClient {
   }
 
   async createProduct(product: Omit<Product, 'createdAt' | 'updatedAt'>): Promise<Product> {
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('products')
-      .insert(productToDb(product))
-      .select()
-      .single();
-    if (error) throw new ApiError(error.message, 400);
-    return dbProductToProduct(data);
+      .insert(productToDb(product));
+    if (error) {
+      if (error.code === '23505') throw new ApiError('Товар с таким ID уже существует', 409);
+      throw new ApiError(error.message, 400);
+    }
+    return { ...product, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() } as Product;
   }
 
   async updateProduct(id: string, updates: Partial<Product>): Promise<Product> {
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('products')
       .update(productToDb(updates))
-      .eq('id', id)
-      .select()
-      .single();
+      .eq('id', id);
     if (error) throw new ApiError(error.message, 400);
-    return dbProductToProduct(data);
+    return { id, ...updates, updatedAt: new Date().toISOString() } as Product;
   }
 
   async deleteProduct(id: string): Promise<{ message: string }> {
@@ -288,24 +287,20 @@ class ApiClient {
   }
 
   async createWorkshop(workshop: Omit<Workshop, 'createdAt' | 'updatedAt'>): Promise<Workshop> {
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('workshops')
-      .insert(workshopToDb(workshop))
-      .select()
-      .single();
+      .insert(workshopToDb(workshop));
     if (error) throw new ApiError(error.message, 400);
-    return dbWorkshopToWorkshop(data);
+    return { ...workshop, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() } as Workshop;
   }
 
   async updateWorkshop(id: string, updates: Partial<Workshop>): Promise<Workshop> {
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('workshops')
       .update(workshopToDb(updates))
-      .eq('id', id)
-      .select()
-      .single();
+      .eq('id', id);
     if (error) throw new ApiError(error.message, 400);
-    return dbWorkshopToWorkshop(data);
+    return { id, ...updates, updatedAt: new Date().toISOString() } as Workshop;
   }
 
   async deleteWorkshop(id: string): Promise<{ message: string }> {

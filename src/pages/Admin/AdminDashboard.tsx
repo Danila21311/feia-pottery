@@ -71,7 +71,7 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-serif font-semibold text-foreground">Панель управления</h1>
+        <h1 className="text-2xl md:text-3xl font-serif font-semibold text-foreground">Панель управления</h1>
         <p className="text-muted-foreground mt-2">Добро пожаловать в административную панель Feia</p>
       </div>
 
@@ -99,7 +99,7 @@ export default function AdminDashboard() {
         {/* Recent Products */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center justify-between">
+            <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <span>Последние товары</span>
               <Link href="/admin/products" className="text-sm text-primary hover:underline">
                 Все товары →
@@ -109,12 +109,12 @@ export default function AdminDashboard() {
           <CardContent>
             <ul className="space-y-3">
               {products.slice(0, 5).map((product) => (
-                <li key={product.id} className="flex items-center justify-between">
+                <li key={product.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
                   <div>
                     <p className="font-medium">{product.name}</p>
                     <p className="text-sm text-muted-foreground">{product.category}</p>
                   </div>
-                  <p className="font-medium">{product.price.toLocaleString('ru-RU')} ₽</p>
+                  <p className="font-medium sm:text-right">{product.price.toLocaleString('ru-RU')} ₽</p>
                 </li>
               ))}
             </ul>
@@ -124,7 +124,7 @@ export default function AdminDashboard() {
         {/* Upcoming Workshops */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center justify-between">
+            <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <span>Ближайшие мастер-классы</span>
               <Link href="/admin/workshops" className="text-sm text-primary hover:underline">
                 Все МК →
@@ -134,14 +134,14 @@ export default function AdminDashboard() {
           <CardContent>
             <ul className="space-y-3">
               {workshops.slice(0, 5).map((workshop) => (
-                <li key={workshop.id} className="flex items-center justify-between">
+                <li key={workshop.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
                   <div>
                     <p className="font-medium">{workshop.title}</p>
                     <p className="text-sm text-muted-foreground">
                       {workshop.date} • {workshop.time}
                     </p>
                   </div>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-muted-foreground sm:text-right">
                     {workshop.currentParticipants}/{workshop.maxParticipants}
                   </p>
                 </li>

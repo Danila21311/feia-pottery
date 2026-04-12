@@ -19,7 +19,7 @@ const navigation = [
   { name: 'Мастер-классы', href: '/admin/workshops', icon: Calendar },
 ];
 
-export function AdminSidebar() {
+export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
   const { logout, user } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
@@ -35,11 +35,11 @@ export function AdminSidebar() {
   };
 
   return (
-    <aside className="w-64 min-h-screen bg-card border-r border-border flex flex-col">
+    <aside className="w-64 h-full bg-card border-r border-border flex flex-col">
       {/* Header */}
       <div className="p-6 border-b border-border">
         <h1 className="text-xl font-serif font-semibold text-primary">Feia Admin</h1>
-        <p className="text-sm text-muted-foreground mt-1">{user?.email}</p>
+        <p className="text-sm text-muted-foreground mt-1 truncate">{user?.email}</p>
       </div>
 
       {/* Navigation */}
@@ -49,6 +49,7 @@ export function AdminSidebar() {
             <li key={item.name}>
               <Link
                 href={item.href}
+                onClick={onNavigate}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
                   isActive(item.href)
                     ? 'bg-primary text-primary-foreground'
@@ -68,7 +69,7 @@ export function AdminSidebar() {
         <Button
           variant="ghost"
           className="w-full justify-start gap-3"
-          onClick={() => router.push('/')}
+          onClick={() => { router.push('/'); onNavigate?.(); }}
         >
           <ArrowLeft className="w-5 h-5" />
           На сайт

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowRight, Sparkles, Heart, Award } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ProductCard } from '@/components/Shop/ProductCard';
@@ -18,11 +18,14 @@ import teamCollage2 from '@/assets/team-collage-2.jpg';
 import { api } from '@/lib/api';
 
 export default function Home() {
-  const [newProducts, setNewProducts] = useState<Product[]>([]);
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
 
   useEffect(() => {
     api.getProducts().then((items) => {
-      setNewProducts((items as unknown as Product[]).filter(p => p.isNew));
+      const all = items as unknown as Product[];
+      const newOnes = all.filter(p => p.isNew);
+      // Show new products if any, otherwise show latest 6
+      setFeaturedProducts(newOnes.length > 0 ? newOnes : all.slice(0, 6));
     }).catch(console.error);
   }, []);
   
@@ -33,42 +36,24 @@ export default function Home() {
   const ctaAnimation = useScrollAnimation(0.1);
   
   const categories = [
-    { name: 'Посуда', href: '/catalog?category=Посуда', image: categoryDishes },
-    { name: 'Декор', href: '/catalog?category=Декор', image: categoryDecor },
-    { name: 'Горшки', href: '/catalog?category=Горшки', image: categoryPots },
-    { name: 'Наборы', href: '/catalog?category=Наборы', image: categorySets },
-  ];
-
-  const features = [
-    {
-      icon: Heart,
-      title: 'Ручная работа',
-      description: 'Каждое изделие создается вручную с особой любовью и вниманием к деталям'
-    },
-    {
-      icon: Sparkles,
-      title: 'Натуральная глина',
-      description: 'Используем только экологически чистую глину высочайшего качества'
-    },
-    {
-      icon: Award,
-      title: 'Уникальность',
-      description: 'Ни одно изделие не повторяется - у вас будет по-настоящему особенная вещь'
-    }
+    { name: 'Посуда', href: '/catalog?category=Посуда', image: categoryDishes.src },
+    { name: 'Декор', href: '/catalog?category=Декор', image: categoryDecor.src },
+    { name: 'Горшки', href: '/catalog?category=Горшки', image: categoryPots.src },
+    { name: 'Наборы', href: '/catalog?category=Наборы', image: categorySets.src },
   ];
 
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
       <section className="py-16 bg-background">
-        <div className="container mx-auto px-4 max-w-6xl">
+        <div className="container mx-auto px-4">
           <div className="relative rounded-2xl overflow-hidden pottery-shadow-hero">
             <img 
-              src={heroImage}
+              src={heroImage.src}
               alt="Ручная керамика Feia"
               className="w-full h-[500px] object-cover"
             />
-            <div className="absolute inset-0 bg-black/30" />
+            <div className="absolute inset-0 bg-black/40" />
             
             <div className="absolute inset-0 flex items-center">
               <div className="w-full px-8 md:px-12">
@@ -79,7 +64,7 @@ export default function Home() {
                       <h1 className="text-2xl font-serif font-bold mb-2 animate-fade-in">Feia</h1>
                       <p className="text-4xl md:text-5xl font-serif font-bold leading-tight animate-fade-in">
                         Ручная керамика<br />
-                        <span className="text-pottery-warm">с душой</span>
+                        <span className="text-white/80">с душой</span>
                       </p>
                     </div>
                   </div>
@@ -103,16 +88,14 @@ export default function Home() {
       {/* Philosophy Section */}
       <section 
         ref={aboutAnimation.elementRef}
-        className={`py-16 bg-background transition-all duration-800 ${
-          aboutAnimation.isVisible ? 'animate-fade-in-up' : 'opacity-0'
-        }`}
+        className={`py-16 bg-background ${aboutAnimation.isVisible ? 'animate-fade-in-up' : ''}`}
       >
-        <div className="container mx-auto px-4 max-w-6xl">
+        <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             {/* Main Team Photo */}
             <div className="lg:col-span-5">
               <img 
-                src={teamMain}
+                src={teamMain.src}
                 alt="Команда Feia в мастерской"
                 className="w-full h-[600px] object-cover rounded-lg pottery-shadow"
               />
@@ -139,12 +122,12 @@ export default function Home() {
             {/* Photo Collage */}
             <div className="lg:col-span-3 space-y-4">
               <img 
-                src={teamCollage1}
+                src={teamCollage1.src}
                 alt="Люди с керамическими изделиями"
                 className="w-full h-48 object-cover rounded-lg pottery-shadow"
               />
               <img 
-                src={teamCollage2}
+                src={teamCollage2.src}
                 alt="Выбор керамики с полки"
                 className="w-full h-60 object-cover rounded-lg pottery-shadow"
               />
@@ -154,12 +137,10 @@ export default function Home() {
       </section>
 
       {/* New Products Section */}
-      {newProducts.length > 0 && (
+      {featuredProducts.length > 0 && (
         <section 
           ref={newProductsAnimation.elementRef}
-          className={`py-16 transition-all duration-800 ${
-            newProductsAnimation.isVisible ? 'animate-fade-in-up' : 'opacity-0'
-          }`}
+          className={`py-16 ${newProductsAnimation.isVisible ? 'animate-fade-in-up' : ''}`}
         >
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
@@ -170,7 +151,7 @@ export default function Home() {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-              {newProducts.slice(0, 6).map((product) => (
+              {featuredProducts.slice(0, 6).map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
@@ -190,9 +171,7 @@ export default function Home() {
       {/* Categories Section */}
       <section 
         ref={categoriesAnimation.elementRef}
-        className={`py-16 bg-secondary transition-all duration-800 ${
-          categoriesAnimation.isVisible ? 'animate-fade-in-up' : 'opacity-0'
-        }`}
+        className={`py-16 bg-secondary ${categoriesAnimation.isVisible ? 'animate-fade-in-up' : ''}`}
       >
         <div className="container mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-serif font-bold text-center mb-12">Категории</h2>
@@ -223,9 +202,7 @@ export default function Home() {
       {/* CTA Section */}
       <section 
         ref={ctaAnimation.elementRef}
-        className={`py-16 pottery-gradient transition-all duration-800 ${
-          ctaAnimation.isVisible ? 'animate-fade-in-up' : 'opacity-0'
-        }`}
+        className={`py-16 bg-[hsl(var(--pottery-sage))] ${ctaAnimation.isVisible ? 'animate-fade-in-up' : ''}`}
       >
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl md:text-4xl font-serif font-bold text-white mb-6">

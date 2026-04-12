@@ -89,7 +89,7 @@ export default function ProductPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-12">
       {/* Breadcrumbs */}
       <nav className="flex items-center space-x-2 text-sm mb-8 text-muted-foreground">
         <Link href="/" className="hover:text-primary transition-colors">Главная</Link>
@@ -155,7 +155,7 @@ export default function ProductPage() {
           {/* Header */}
           <div>
             <div className="flex items-start justify-between mb-2">
-              <h1 className="text-3xl font-serif font-bold">{product.name}</h1>
+              <h1 className="text-2xl md:text-3xl font-serif font-bold pr-3">{product.name}</h1>
               <Button variant="ghost" size="sm" onClick={handleShare}>
                 <Share2 className="w-4 h-4" />
               </Button>
@@ -164,7 +164,7 @@ export default function ProductPage() {
           </div>
 
           {/* Badges */}
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {product.isNew && (
               <Badge className="bg-pottery-sage text-white">Новинка</Badge>
             )}
@@ -177,7 +177,7 @@ export default function ProductPage() {
           </div>
 
           {/* Price */}
-          <div className="text-3xl font-bold text-primary">
+          <div className="text-2xl md:text-3xl font-bold text-primary">
             {product.price.toLocaleString()}₽
           </div>
 
@@ -200,11 +200,11 @@ export default function ProductPage() {
           </div>
 
           {/* Actions */}
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <Button
               onClick={handleAddToCart}
               disabled={!product.inStock}
-              className="flex-1 sage-gradient"
+              className="flex-1 sage-gradient w-full"
               size="lg"
             >
               <ShoppingCart className="w-5 h-5 mr-2" />
@@ -215,7 +215,7 @@ export default function ProductPage() {
               variant="outline"
               size="lg"
               onClick={handleWishlistToggle}
-              className={isInWishlist ? 'text-red-500 border-red-500' : ''}
+              className={isInWishlist ? 'text-red-500 border-red-500 w-full sm:w-auto' : 'w-full sm:w-auto'}
             >
               <Heart className={`w-5 h-5 ${isInWishlist ? 'fill-current' : ''}`} />
             </Button>

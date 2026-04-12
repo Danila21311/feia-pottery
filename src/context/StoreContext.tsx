@@ -1,6 +1,7 @@
 'use client';
 
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useRef } from 'react';
+import { useAuth } from '@/context/AuthContext';
 
 export interface Product {
   id: string;
@@ -153,28 +154,39 @@ const StoreContext = createContext<{
 
 export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(storeReducer, initialState);
+  const { user } = useAuth();
+  const prevUserIdRef = useRef<string | null>(null);
 
-  // Load from localStorage on mount
+  // Wishlist key scoped to user; cart is always shared (anonymous checkout)
+  const wishlistKey = user ? `feiaWishlist_${user.id}` : null;
+
+  // Load from localStorage on mount and when user changes
   useEffect(() => {
     const savedCart = localStorage.getItem('feiaCart');
-    const savedWishlist = localStorage.getItem('feiaWishlist');
-    
-    if (savedCart || savedWishlist) {
-      dispatch({
-        type: 'LOAD_STATE',
-        payload: {
-          cart: savedCart ? JSON.parse(savedCart) : [],
-          wishlist: savedWishlist ? JSON.parse(savedWishlist) : [],
-        },
-      });
-    }
-  }, []);
+    const savedWishlist = wishlistKey ? localStorage.getItem(wishlistKey) : null;
 
-  // Save to localStorage when state changes
+    dispatch({
+      type: 'LOAD_STATE',
+      payload: {
+        cart: savedCart ? JSON.parse(savedCart) : [],
+        wishlist: savedWishlist ? JSON.parse(savedWishlist) : [],
+      },
+    });
+
+    prevUserIdRef.current = user?.id ?? null;
+  }, [user?.id, wishlistKey]);
+
+  // Save cart to localStorage when it changes
   useEffect(() => {
     localStorage.setItem('feiaCart', JSON.stringify(state.cart));
-    localStorage.setItem('feiaWishlist', JSON.stringify(state.wishlist));
-  }, [state.cart, state.wishlist]);
+  }, [state.cart]);
+
+  // Save wishlist to user-scoped localStorage when it changes
+  useEffect(() => {
+    if (wishlistKey) {
+      localStorage.setItem(wishlistKey, JSON.stringify(state.wishlist));
+    }
+  }, [state.wishlist, wishlistKey]);
 
   return (
     <StoreContext.Provider value={{ state, dispatch }}>

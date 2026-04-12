@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Calendar, Clock, Users, Award, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -9,6 +9,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
 import { api, Workshop as ApiWorkshop } from '@/lib/api';
+import teamMain from '@/assets/team-main.jpg';
+import teamCollage1 from '@/assets/team-collage-1.jpg';
+import teamCollage2 from '@/assets/team-collage-2.jpg';
 
 interface Workshop {
   id: string;
@@ -102,7 +105,7 @@ ${formData.comment ? `Комментарий: ${formData.comment}` : ''}`;
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-12">
       {/* Header */}
       <div className="text-center mb-12">
         <h1 className="text-4xl font-serif font-bold mb-4">Мастер-классы</h1>
@@ -112,8 +115,31 @@ ${formData.comment ? `Комментарий: ${formData.comment}` : ''}`;
         </p>
       </div>
 
+      {/* Workshop Atmosphere Gallery */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-16">
+        <div className="md:col-span-2">
+          <img 
+            src={teamMain.src}
+            alt="Мастерская Feia — атмосфера творчества"
+            className="w-full h-72 md:h-80 object-cover rounded-lg pottery-shadow"
+          />
+        </div>
+        <div className="space-y-4">
+          <img 
+            src={teamCollage1.src}
+            alt="Участники мастер-класса за работой"
+            className="w-full h-[calc(50%-0.5rem)] object-cover rounded-lg pottery-shadow"
+          />
+          <img 
+            src={teamCollage2.src}
+            alt="Готовые керамические изделия"
+            className="w-full h-[calc(50%-0.5rem)] object-cover rounded-lg pottery-shadow"
+          />
+        </div>
+      </div>
+
       {/* Workshops Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {workshops.map((workshop) => {
           const availableSpots = getAvailableSpots(workshop);
           
@@ -133,19 +159,19 @@ ${formData.comment ? `Комментарий: ${formData.comment}` : ''}`;
                 {/* Workshop Details */}
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-pottery-sage" />
+                    <span className="text-pottery-sage font-medium">Дата:</span>
                     <span>{formatDate(workshop.date)}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-pottery-sage" />
+                    <span className="text-pottery-sage font-medium">Время:</span>
                     <span>{workshop.time}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4 text-pottery-sage" />
+                    <span className="text-pottery-sage font-medium">Формат:</span>
                     <span>{workshop.format}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Award className="w-4 h-4 text-pottery-sage" />
+                    <span className="text-pottery-sage font-medium">Длит.:</span>
                     <span>{workshop.duration}</span>
                   </div>
                 </div>

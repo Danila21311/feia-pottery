@@ -33,6 +33,7 @@ const STATUS_VARIANTS: Record<string, 'default' | 'secondary' | 'destructive' | 
 export default function Profile() {
   const { user, isLoading, logout } = useAuth();
   const { toast } = useToast();
+  const router = useRouter();
 
   const [name, setName] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -54,6 +55,12 @@ export default function Profile() {
       .finally(() => setOrdersLoading(false));
   }, [user]);
 
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.replace('/auth');
+    }
+  }, [isLoading, user, router]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -62,10 +69,7 @@ export default function Profile() {
     );
   }
 
-  const router = useRouter();
-
   if (!user) {
-    router.replace('/auth');
     return null;
   }
 
@@ -84,7 +88,7 @@ export default function Profile() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-3xl">
-      <h1 className="text-3xl font-serif font-semibold mb-8">Личный кабинет</h1>
+      <h1 className="text-2xl md:text-3xl font-serif font-semibold mb-8">Личный кабинет</h1>
 
       {/* Profile Info */}
       <Card className="mb-8">
@@ -106,14 +110,15 @@ export default function Profile() {
             <Label>Email</Label>
             <Input value={user.email} disabled className="bg-muted" />
           </div>
-          <div className="flex gap-3">
-            <Button onClick={handleSaveProfile} disabled={isSaving} size="sm">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button onClick={handleSaveProfile} disabled={isSaving} size="sm" className="w-full sm:w-auto">
               <Save className="w-4 h-4 mr-2" />
               {isSaving ? 'Сохранение...' : 'Сохранить'}
             </Button>
             <Button
               variant="outline"
               size="sm"
+              className="w-full sm:w-auto"
               onClick={() => logout()}
             >
               <LogOut className="w-4 h-4 mr-2" />

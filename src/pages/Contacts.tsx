@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { MapPin, Phone, Mail, Clock, Send } from 'lucide-react';
+import { MapPin, Phone, Mail, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -80,7 +80,7 @@ Email: ${formData.email}`;
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-12">
       {/* Header */}
       <div className="text-center mb-12">
         <h1 className="text-4xl font-serif font-bold mb-4">Контакты</h1>
@@ -90,7 +90,7 @@ Email: ${formData.email}`;
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         {/* Contact Information */}
         <div>
           <h2 className="text-2xl font-serif font-semibold mb-6">Как с нами связаться</h2>
@@ -151,8 +151,7 @@ Email: ${formData.email}`;
           
           <Card className="pottery-card">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Send className="w-5 h-5 text-pottery-sage" />
+              <CardTitle>
                 Форма обратной связи
               </CardTitle>
             </CardHeader>
@@ -209,7 +208,6 @@ Email: ${formData.email}`;
                 </div>
 
                 <Button type="submit" className="w-full sage-gradient" size="lg">
-                  <Send className="w-4 h-4 mr-2" />
                   Отправить сообщение
                 </Button>
               </form>
