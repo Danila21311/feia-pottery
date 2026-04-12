@@ -1,5 +1,7 @@
+'use client';
+
 import { Heart, ShoppingCart } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { Product, useStore } from '@/context/StoreContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -32,7 +34,7 @@ export function ProductCard({ product }: ProductCardProps) {
     <div className="group cursor-pointer">
       {/* Product Image with 4:5 aspect ratio */}
       <div className="relative aspect-[4/5] overflow-hidden rounded-lg pottery-shadow mb-4">
-        <Link to={`/product/${product.id}`}>
+        <Link href={`/product/${product.id}`}>
           <img
             src={product.images[0]}
             alt={product.name}
@@ -67,7 +69,7 @@ export function ProductCard({ product }: ProductCardProps) {
 
       {/* Product Info */}
       <div className="space-y-3">
-        <Link to={`/product/${product.id}`}>
+        <Link href={`/product/${product.id}`}>
           <h3 className="font-serif text-foreground group-hover:text-pottery-sage transition-colors leading-tight">
             {product.name}
           </h3>
@@ -79,7 +81,7 @@ export function ProductCard({ product }: ProductCardProps) {
 
         {/* Action Buttons */}
         <div className="flex gap-2">
-          <Link to={`/product/${product.id}`} className="flex-1">
+          <Link href={`/product/${product.id}`} className="flex-1">
             <Button variant="outline" size="sm" className="w-full">
               Подробнее
             </Button>

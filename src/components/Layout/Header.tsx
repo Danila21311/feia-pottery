@@ -1,5 +1,8 @@
+'use client';
+
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Menu, X, ShoppingCart, Heart, Settings, UserCircle, LogIn } from 'lucide-react';
 import { useStore } from '@/context/StoreContext';
 import { useAuth } from '@/context/AuthContext';
@@ -9,7 +12,7 @@ export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { state, dispatch } = useStore();
   const { user, isAdmin } = useAuth();
-  const location = useLocation();
+  const pathname = usePathname();
 
   const navigation = [
     { name: 'Каталог', href: '/catalog' },
@@ -18,7 +21,7 @@ export function Header() {
     { name: 'Контакты', href: '/contacts' },
   ];
 
-  const isActive = (href: string) => location.pathname === href;
+  const isActive = (href: string) => pathname === href;
   const cartItemsCount = state.cart.reduce((sum, item) => sum + item.quantity, 0);
   const wishlistCount = state.wishlist.length;
 
@@ -28,7 +31,7 @@ export function Header() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link 
-            to="/" 
+            href="/" 
             className="text-2xl font-serif font-semibold text-primary hover:text-pottery-sage transition-colors"
           >
             Feia
@@ -39,7 +42,7 @@ export function Header() {
             {navigation.map((item) => (
               <Link
                 key={item.name}
-                to={item.href}
+                href={item.href}
                 className={`text-sm font-medium transition-colors hover:text-primary ${
                   isActive(item.href) 
                     ? 'text-primary border-b-2 border-primary pb-1' 
@@ -60,7 +63,7 @@ export function Header() {
                 asChild
                 className="p-2 hover:bg-accent"
               >
-                <Link to="/admin">
+                <Link href="/admin">
                   <Settings className="w-5 h-5" />
                 </Link>
               </Button>
@@ -72,7 +75,7 @@ export function Header() {
                 asChild
                 className="p-2 hover:bg-accent"
               >
-                <Link to="/profile">
+                <Link href="/profile">
                   <UserCircle className="w-5 h-5" />
                 </Link>
               </Button>
@@ -84,7 +87,7 @@ export function Header() {
                 asChild
                 className="p-2 hover:bg-accent"
               >
-                <Link to="/auth">
+                <Link href="/auth">
                   <LogIn className="w-5 h-5" />
                 </Link>
               </Button>
@@ -136,7 +139,7 @@ export function Header() {
               {navigation.map((item) => (
                 <Link
                   key={item.name}
-                  to={item.href}
+                  href={item.href}
                   className={`text-sm font-medium py-2 px-4 rounded-md transition-colors ${
                     isActive(item.href)
                       ? 'bg-accent text-primary'

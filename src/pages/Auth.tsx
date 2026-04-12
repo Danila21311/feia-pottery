@@ -1,5 +1,8 @@
+'use client';
+
 import { useState } from 'react';
-import { useLocation, useNavigate, Navigate, Link } from 'react-router-dom';
+import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -34,11 +37,11 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
   const { login, register, user, isAdmin } = useAuth();
-  const location = useLocation();
-  const navigate = useNavigate();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
 
-  const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/';
+  const from = searchParams.get('from') || '/';
 
   const loginForm = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -50,8 +53,9 @@ export default function Auth() {
 
   // Redirect if already logged in
   if (user) {
-    if (isAdmin) return <Navigate to="/admin" replace />;
-    return <Navigate to={from === '/auth' ? '/profile' : from} replace />;
+    if (isAdmin) { router.replace('/admin'); return null; }
+    router.replace(from === '/auth' ? '/profile' : from);
+    return null;
   }
 
   const onLogin = async (data: LoginFormData) => {
@@ -75,7 +79,7 @@ export default function Auth() {
     try {
       await register(data.email, data.password, data.name);
       toast({ title: 'Регистрация прошла успешно', description: `Добро пожаловать, ${data.name}!` });
-      navigate('/profile');
+      router.push('/profile');
     } catch (error) {
       const message =
         error instanceof ApiError
@@ -91,7 +95,7 @@ export default function Auth() {
     <div className="min-h-screen flex items-center justify-center bg-background px-4 py-12">
       <div className="w-full max-w-md">
         <Link
-          to="/"
+          href="/"
           className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors mb-8"
         >
           <ArrowLeft className="w-4 h-4" />

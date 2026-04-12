@@ -1,5 +1,8 @@
-import { Link } from 'react-router-dom';
+'use client';
+
+import Link from 'next/link';
 import { ArrowRight, Sparkles, Heart, Award } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ProductCard } from '@/components/Shop/ProductCard';
 import { Product } from '@/context/StoreContext';
@@ -12,12 +15,16 @@ import categorySets from '@/assets/category-sets.jpg';
 import teamMain from '@/assets/team-main.jpg';
 import teamCollage1 from '@/assets/team-collage-1.jpg';
 import teamCollage2 from '@/assets/team-collage-2.jpg';
-import productsData from '@/data/products.json';
+import { api } from '@/lib/api';
 
 export default function Home() {
-  // Cast the imported data to the correct type
-  const products = productsData as Product[];
-  const newProducts = products.filter(product => product.isNew);
+  const [newProducts, setNewProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    api.getProducts().then((items) => {
+      setNewProducts((items as unknown as Product[]).filter(p => p.isNew));
+    }).catch(console.error);
+  }, []);
   
   // Animation hooks for different sections
   const aboutAnimation = useScrollAnimation(0.1);
@@ -79,7 +86,7 @@ export default function Home() {
                   
                   {/* Right Content */}
                   <div className="text-center">
-                    <Link to="/catalog">
+                    <Link href="/catalog">
                       <Button size="lg" className="sage-gradient animate-fade-in pottery-shadow-hero text-lg px-8 py-3">
                         Каталог
                         <ArrowRight className="ml-2 w-5 h-5" />
@@ -169,7 +176,7 @@ export default function Home() {
             </div>
             
             <div className="text-center">
-              <Link to="/catalog">
+              <Link href="/catalog">
                 <Button variant="outline" size="lg">
                   Смотреть весь каталог
                   <ArrowRight className="ml-2 w-4 h-4" />
@@ -194,7 +201,7 @@ export default function Home() {
             {categories.map((category) => (
               <Link
                 key={category.name}
-                to={category.href}
+                href={category.href}
                 className="group cursor-pointer"
               >
                 <div className="relative aspect-[4/5] overflow-hidden rounded-lg pottery-shadow mb-4">
@@ -227,7 +234,7 @@ export default function Home() {
           <p className="text-lg text-white/90 mb-8 max-w-2xl mx-auto">
             Присоединяйтесь к нашим мастер-классам и научитесь создавать уникальную керамику своими руками
           </p>
-          <Link to="/workshops">
+          <Link href="/workshops">
             <Button size="lg" variant="secondary" className="pottery-shadow-hero">
               Записаться на мастер-класс
               <ArrowRight className="ml-2 w-5 h-5" />

@@ -1,5 +1,7 @@
+'use client';
+
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { api, Product, ApiError } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -89,7 +91,7 @@ export default function AdminProducts() {
           <p className="text-muted-foreground mt-1">Управление каталогом товаров</p>
         </div>
         <Button asChild>
-          <Link to="/admin/products/new">
+          <Link href="/admin/products/new">
             <Plus className="w-4 h-4 mr-2" />
             Добавить товар
           </Link>
@@ -140,7 +142,7 @@ export default function AdminProducts() {
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <Button variant="ghost" size="icon" asChild>
-                        <Link to={`/admin/products/${product.id}/edit`}>
+                        <Link href={`/admin/products/${product.id}/edit`}>
                           <Pencil className="w-4 h-4" />
                         </Link>
                       </Button>

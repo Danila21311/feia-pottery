@@ -1,5 +1,7 @@
+'use client';
+
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useRouter, useParams } from 'next/navigation';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -35,7 +37,7 @@ const levels = ['Начинающий', 'Продолжающий', 'Любой'
 export default function AdminWorkshopEdit() {
   const { id } = useParams();
   const isEditing = !!id;
-  const navigate = useNavigate();
+  const navigate = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -88,7 +90,7 @@ export default function AdminWorkshopEdit() {
             description: 'Не удалось загрузить мастер-класс',
             variant: 'destructive',
           });
-          navigate('/admin/workshops');
+          router.push('/admin/workshops');
         })
         .finally(() => setIsLoading(false));
     }
@@ -115,7 +117,7 @@ export default function AdminWorkshopEdit() {
           description: 'Мастер-класс создан',
         });
       }
-      navigate('/admin/workshops');
+      router.push('/admin/workshops');
     } catch (error) {
       const message = error instanceof ApiError ? error.message : 'Не удалось сохранить мастер-класс';
       toast({
@@ -139,7 +141,7 @@ export default function AdminWorkshopEdit() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/admin/workshops')}>
+        <Button variant="ghost" size="icon" onClick={() => router.push('/admin/workshops')}>
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <div>
@@ -345,7 +347,7 @@ export default function AdminWorkshopEdit() {
           <Button type="submit" disabled={isSaving}>
             {isSaving ? 'Сохранение...' : isEditing ? 'Сохранить изменения' : 'Создать мастер-класс'}
           </Button>
-          <Button type="button" variant="outline" onClick={() => navigate('/admin/workshops')}>
+          <Button type="button" variant="outline" onClick={() => router.push('/admin/workshops')}>
             Отмена
           </Button>
         </div>

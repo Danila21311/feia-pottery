@@ -1,20 +1,51 @@
-import { useParams, Link, useNavigate } from 'react-router-dom';
+'use client';
+
+import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { ArrowLeft, Heart, ShoppingCart, Share2 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Product, useStore } from '@/context/StoreContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ProductCard } from '@/components/Shop/ProductCard';
-import productsData from '@/data/products.json';
+import { api } from '@/lib/api';
 
 export default function ProductPage() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
+  const router = useRouter();
   const { state, dispatch } = useStore();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const products = productsData as Product[];
-  const product = products.find(p => p.id === id);
+  useEffect(() => {
+    if (!id) return;
+    setIsLoading(true);
+    Promise.all([
+      api.getProduct(id).catch(() => null),
+      api.getProducts(),
+    ]).then(([prod, allProducts]) => {
+      if (prod) {
+        setProduct(prod as unknown as Product);
+        setRelatedProducts(
+          (allProducts as unknown as Product[])
+            .filter(p => p.category === prod.category && p.id !== prod.id)
+            .slice(0, 4)
+        );
+      } else {
+        setProduct(null);
+      }
+    }).catch(console.error).finally(() => setIsLoading(false));
+  }, [id]);
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-16 text-center">
+        <p className="text-muted-foreground">Загрузка...</p>
+      </div>
+    );
+  }
   
   if (!product) {
     return (
@@ -22,7 +53,7 @@ export default function ProductPage() {
         <div className="text-6xl mb-4">🏺</div>
         <h1 className="text-2xl font-serif font-bold mb-4">Товар не найден</h1>
         <p className="text-muted-foreground mb-8">Возможно, товар был удален или перемещен.</p>
-        <Link to="/catalog">
+        <Link href="/catalog">
           <Button>Вернуться в каталог</Button>
         </Link>
       </div>
@@ -31,11 +62,6 @@ export default function ProductPage() {
 
   const isInWishlist = state.wishlist.some(item => item.id === product.id);
   const isInCart = state.cart.some(item => item.id === product.id);
-  
-  // Related products from same category
-  const relatedProducts = products
-    .filter(p => p.category === product.category && p.id !== product.id)
-    .slice(0, 4);
 
   const handleWishlistToggle = () => {
     if (isInWishlist) {
@@ -66,12 +92,12 @@ export default function ProductPage() {
     <div className="container mx-auto px-4 py-8">
       {/* Breadcrumbs */}
       <nav className="flex items-center space-x-2 text-sm mb-8 text-muted-foreground">
-        <Link to="/" className="hover:text-primary transition-colors">Главная</Link>
+        <Link href="/" className="hover:text-primary transition-colors">Главная</Link>
         <span>/</span>
-        <Link to="/catalog" className="hover:text-primary transition-colors">Каталог</Link>
+        <Link href="/catalog" className="hover:text-primary transition-colors">Каталог</Link>
         <span>/</span>
         <Link 
-          to={`/catalog?category=${encodeURIComponent(product.category)}`} 
+          href={`/catalog?category=${encodeURIComponent(product.category)}`} 
           className="hover:text-primary transition-colors"
         >
           {product.category}
@@ -83,7 +109,7 @@ export default function ProductPage() {
       {/* Back Button */}
       <Button 
         variant="ghost" 
-        onClick={() => navigate(-1)}
+        onClick={() => router.back()}
         className="mb-6 -ml-2"
       >
         <ArrowLeft className="w-4 h-4 mr-2" />

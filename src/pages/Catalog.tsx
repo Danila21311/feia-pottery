@@ -1,29 +1,37 @@
+'use client';
+
 import { useState, useMemo, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useSearchParams } from 'next/navigation';
 import { Search, Filter } from 'lucide-react';
 import { ProductCard } from '@/components/Shop/ProductCard';
 import { Product } from '@/context/StoreContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import productsData from '@/data/products.json';
+import { api, Product as ApiProduct } from '@/lib/api';
 
 export default function Catalog() {
-  const products = productsData as Product[];
-  const location = useLocation();
+  const searchParams = useSearchParams();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [sortBy, setSortBy] = useState('name');
   const [showOnlyNew, setShowOnlyNew] = useState(false);
 
+  useEffect(() => {
+    api.getProducts().then((items) => {
+      setProducts(items as unknown as Product[]);
+    }).catch(console.error).finally(() => setIsLoading(false));
+  }, []);
+
   // Handle URL parameters on load
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const categoryParam = params.get('category');
+    const categoryParam = searchParams.get('category');
     if (categoryParam) {
       setSelectedCategory(categoryParam);
     }
-  }, [location.search]);
+  }, [searchParams]);
 
   const categories = Array.from(new Set(products.map(p => p.category)));
   
@@ -66,6 +74,14 @@ export default function Catalog() {
 
     return filtered;
   }, [products, searchQuery, selectedCategory, sortBy, showOnlyNew]);
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-16 text-center">
+        <p className="text-muted-foreground">Загрузка каталога...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">

@@ -1,12 +1,14 @@
+'use client';
+
 import { X, Minus, Plus, ShoppingBag } from 'lucide-react';
 import { useStore, Product } from '@/context/StoreContext';
 import { Button } from '@/components/ui/button';
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 
 export function CartModal() {
   const { state, dispatch } = useStore();
-  const navigate = useNavigate();
+  const router = useRouter();
 
   useEffect(() => {
     if (state.isCartOpen) {
@@ -39,7 +41,7 @@ export function CartModal() {
 
   const handleCheckout = () => {
     dispatch({ type: 'CLOSE_MODALS' });
-    navigate('/checkout');
+    router.push('/checkout');
   };
 
   return (

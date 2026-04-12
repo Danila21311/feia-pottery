@@ -1,5 +1,5 @@
 import { MapPin, Phone, Mail, Instagram } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 
 export function Footer() {
   const socialLinks = [
@@ -93,7 +93,7 @@ export function Footer() {
               {footerLinks.map((link) => (
                 <Link
                   key={link.name}
-                  to={link.href}
+                  href={link.href}
                   className="text-muted-foreground hover:text-primary transition-colors"
                 >
                   {link.name}

@@ -1,5 +1,8 @@
+'use client';
+
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ArrowLeft, ShoppingBag, MapPin, CreditCard, Truck } from 'lucide-react';
 import { useStore, Product, GiftCard } from '@/context/StoreContext';
 import { api } from '@/lib/api';
@@ -26,7 +29,7 @@ interface CustomerData {
 
 export default function Checkout() {
   const { state, dispatch } = useStore();
-  const navigate = useNavigate();
+  const router = useRouter();
   
   const [customerData, setCustomerData] = useState<CustomerData>({
     name: '',
@@ -45,9 +48,9 @@ export default function Checkout() {
   // Redirect to catalog if cart is empty
   useEffect(() => {
     if (state.cart.length === 0) {
-      navigate('/catalog');
+      router.push('/catalog');
     }
-  }, [state.cart.length, navigate]);
+  }, [state.cart.length, router]);
 
   // Load CloudPayments script
   useEffect(() => {
@@ -114,25 +117,24 @@ export default function Checkout() {
           customerPhone: customerData.phone
         }
       }, {
-        onSuccess: async function() {
-          // Save order to DB
-          try {
-            await api.createOrder({
-              customerName: customerData.name,
-              customerPhone: customerData.phone,
-              customerEmail: customerData.email,
-              comment: customerData.comment,
-              items: state.cart,
-              total: finalTotal,
-            });
-          } catch {
-            // Non-critical: order may still be tracked elsewhere
-            console.warn('Could not save order to DB');
-          }
+        onSuccess: function() {
+          // Fire-and-forget DB save (non-blocking)
+          api.createOrder({
+            customerName: customerData.name,
+            customerPhone: customerData.phone,
+            customerEmail: customerData.email,
+            comment: customerData.comment,
+            items: state.cart,
+            total: finalTotal,
+          }).catch(() => console.warn('Could not save order to DB'));
+
+          // Clear cart in both React state and localStorage directly
           dispatch({ type: 'CLEAR_CART' });
+          localStorage.setItem('feiaCart', '[]');
           localStorage.removeItem('currentOrder');
-          navigate('/checkout/success');
-          toast.success('Заказ успешно оплачен!');
+
+          // Use window.location for reliable navigation from payment widget callback
+          window.location.href = '/checkout/success';
         },
         onFail: function() {
           toast.error('Ошибка при оплате. Попробуйте еще раз.');
@@ -155,7 +157,7 @@ export default function Checkout() {
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       {/* Header */}
       <div className="flex items-center gap-4 mb-8">
-        <Link to="/catalog">
+        <Link href="/catalog">
           <Button variant="ghost" size="sm">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Назад в каталог
@@ -315,7 +317,7 @@ export default function Checkout() {
 
               <p className="text-xs text-muted-foreground text-center">
                 Нажимая кнопку "Оплатить", вы соглашаетесь с{' '}
-                <Link to="/terms" className="underline">условиями использования</Link>
+                <Link href="/terms" className="underline">условиями использования</Link>
               </p>
             </CardContent>
           </Card>

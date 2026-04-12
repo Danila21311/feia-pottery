@@ -1,5 +1,7 @@
+'use client';
+
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { api, Product, Workshop } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Package, Calendar, TrendingUp, Users } from 'lucide-react';
@@ -76,7 +78,7 @@ export default function AdminDashboard() {
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
-          <Link key={stat.name} to={stat.href}>
+          <Link key={stat.name} href={stat.href}>
             <Card className="pottery-card hover:border-primary/50 transition-colors">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -99,7 +101,7 @@ export default function AdminDashboard() {
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span>Последние товары</span>
-              <Link to="/admin/products" className="text-sm text-primary hover:underline">
+              <Link href="/admin/products" className="text-sm text-primary hover:underline">
                 Все товары →
               </Link>
             </CardTitle>
@@ -124,7 +126,7 @@ export default function AdminDashboard() {
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span>Ближайшие мастер-классы</span>
-              <Link to="/admin/workshops" className="text-sm text-primary hover:underline">
+              <Link href="/admin/workshops" className="text-sm text-primary hover:underline">
                 Все МК →
               </Link>
             </CardTitle>

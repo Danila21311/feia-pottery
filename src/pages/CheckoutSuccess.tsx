@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { CheckCircle, ShoppingBag, Mail, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -86,12 +86,12 @@ export default function CheckoutSuccess() {
         {/* Actions */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button asChild variant="outline">
-            <Link to="/catalog">
+            <Link href="/catalog">
               Продолжить покупки
             </Link>
           </Button>
           <Button asChild className="sage-gradient">
-            <Link to="/">
+            <Link href="/">
               На главную
             </Link>
           </Button>

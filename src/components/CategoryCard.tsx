@@ -1,4 +1,6 @@
-import { Link } from 'react-router-dom';
+'use client';
+
+import Link from 'next/link';
 
 interface CategoryCardProps {
   category: {
@@ -11,7 +13,7 @@ interface CategoryCardProps {
 export function CategoryCard({ category }: CategoryCardProps) {
   return (
     <Link
-      to={`/catalog?category=${encodeURIComponent(category.name)}`}
+      href={`/catalog?category=${encodeURIComponent(category.name)}`}
       className="group cursor-pointer"
     >
       <div className="relative aspect-[4/5] overflow-hidden rounded-lg pottery-shadow mb-4">

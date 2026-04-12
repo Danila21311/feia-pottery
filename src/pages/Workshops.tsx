@@ -1,4 +1,6 @@
-import { useState } from 'react';
+'use client';
+
+import { useState, useEffect } from 'react';
 import { Calendar, Clock, Users, Award, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
-import workshopsData from '@/data/workshops.json';
+import { api, Workshop as ApiWorkshop } from '@/lib/api';
 
 interface Workshop {
   id: string;
@@ -24,7 +26,8 @@ interface Workshop {
 }
 
 export default function Workshops() {
-  const workshops = workshopsData as Workshop[];
+  const [workshops, setWorkshops] = useState<Workshop[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedWorkshop, setSelectedWorkshop] = useState<Workshop | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -33,6 +36,12 @@ export default function Workshops() {
     email: '',
     comment: ''
   });
+
+  useEffect(() => {
+    api.getWorkshops().then((items) => {
+      setWorkshops(items as unknown as Workshop[]);
+    }).catch(console.error).finally(() => setIsLoading(false));
+  }, []);
 
   const handleRegister = (workshop: Workshop) => {
     setSelectedWorkshop(workshop);

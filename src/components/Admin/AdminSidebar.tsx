@@ -1,4 +1,7 @@
-import { NavLink, useNavigate } from 'react-router-dom';
+'use client';
+
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { 
@@ -18,11 +21,17 @@ const navigation = [
 
 export function AdminSidebar() {
   const { logout, user } = useAuth();
-  const navigate = useNavigate();
+  const router = useRouter();
+  const pathname = usePathname();
 
   const handleLogout = async () => {
     await logout();
-    navigate('/');
+    router.push('/');
+  };
+
+  const isActive = (href: string) => {
+    if (href === '/admin') return pathname === '/admin';
+    return pathname.startsWith(href);
   };
 
   return (
@@ -38,20 +47,17 @@ export function AdminSidebar() {
         <ul className="space-y-1">
           {navigation.map((item) => (
             <li key={item.name}>
-              <NavLink
-                to={item.href}
-                end={item.href === '/admin'}
-                className={({ isActive }) =>
-                  `flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                    isActive
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-                  }`
-                }
+              <Link
+                href={item.href}
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                  isActive(item.href)
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                }`}
               >
                 <item.icon className="w-5 h-5" />
                 {item.name}
-              </NavLink>
+              </Link>
             </li>
           ))}
         </ul>
@@ -62,7 +68,7 @@ export function AdminSidebar() {
         <Button
           variant="ghost"
           className="w-full justify-start gap-3"
-          onClick={() => navigate('/')}
+          onClick={() => router.push('/')}
         >
           <ArrowLeft className="w-5 h-5" />
           На сайт

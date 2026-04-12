@@ -14,9 +14,9 @@ export default {
     },
     extend: {
       fontFamily: {
-        serif: ['Playfair Display', 'serif'],
-        body: ['Lato', 'sans-serif'],
-        sans: ['Lato', 'sans-serif'],
+        serif: ['var(--font-playfair)', 'Playfair Display', 'serif'],
+        body: ['var(--font-lato)', 'Lato', 'sans-serif'],
+        sans: ['var(--font-lato)', 'Lato', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",

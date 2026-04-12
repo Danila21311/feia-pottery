@@ -1,5 +1,7 @@
+'use client';
+
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { api, Workshop, ApiError } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -89,7 +91,7 @@ export default function AdminWorkshops() {
           <p className="text-muted-foreground mt-1">Управление расписанием мастер-классов</p>
         </div>
         <Button asChild>
-          <Link to="/admin/workshops/new">
+          <Link href="/admin/workshops/new">
             <Plus className="w-4 h-4 mr-2" />
             Добавить мастер-класс
           </Link>
@@ -137,7 +139,7 @@ export default function AdminWorkshops() {
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <Button variant="ghost" size="icon" asChild>
-                        <Link to={`/admin/workshops/${workshop.id}/edit`}>
+                        <Link href={`/admin/workshops/${workshop.id}/edit`}>
                           <Pencil className="w-4 h-4" />
                         </Link>
                       </Button>

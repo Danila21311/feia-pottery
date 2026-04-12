@@ -1,6 +1,8 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+'use client';
+
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { api, User, ApiError } from '@/lib/api';
+import { api, User } from '@/lib/api';
 
 interface AuthContextType {
   user: User | null;
@@ -17,8 +19,22 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  // Guard to prevent onAuthStateChange from re-fetching user
+  // when login/register already set it
+  const skipNextAuthEvent = useRef(false);
 
   const isAdmin = user?.roles?.includes('admin') ?? false;
+
+  const fetchAndSetUser = useCallback(async (): Promise<User | null> => {
+    try {
+      const { user } = await api.getMe();
+      setUser(user);
+      return user;
+    } catch {
+      setUser(null);
+      return null;
+    }
+  }, []);
 
   const checkAuth = useCallback(async () => {
     try {
@@ -28,14 +44,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setIsLoading(false);
         return;
       }
-      const { user } = await api.getMe();
-      setUser(user);
+      await fetchAndSetUser();
     } catch {
       setUser(null);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [fetchAndSetUser]);
 
   useEffect(() => {
     checkAuth();
@@ -46,26 +61,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(null);
           return;
         }
-        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-          try {
-            const { user } = await api.getMe();
-            setUser(user);
-          } catch {
-            setUser(null);
-          }
+        // Skip if login/register already handled this
+        if (skipNextAuthEvent.current) {
+          skipNextAuthEvent.current = false;
+          return;
+        }
+        if (event === 'TOKEN_REFRESHED') {
+          await fetchAndSetUser();
         }
       }
     );
 
     return () => subscription.unsubscribe();
-  }, [checkAuth]);
+  }, [checkAuth, fetchAndSetUser]);
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
+      skipNextAuthEvent.current = true;
       const result = await api.login(email, password);
       setUser(result.user);
     } catch (error) {
+      skipNextAuthEvent.current = false;
       setUser(null);
       throw error;
     } finally {
@@ -76,9 +93,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const register = async (email: string, password: string, name: string) => {
     setIsLoading(true);
     try {
+      skipNextAuthEvent.current = true;
       const result = await api.register(email, password, name);
       setUser(result.user);
     } catch (error) {
+      skipNextAuthEvent.current = false;
       setUser(null);
       throw error;
     } finally {

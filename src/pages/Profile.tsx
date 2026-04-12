@@ -1,5 +1,8 @@
+'use client';
+
 import { useState, useEffect } from 'react';
-import { Navigate, Link } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { api, Order, ApiError } from '@/lib/api';
 import { Button } from '@/components/ui/button';
@@ -59,8 +62,11 @@ export default function Profile() {
     );
   }
 
+  const router = useRouter();
+
   if (!user) {
-    return <Navigate to="/auth" replace />;
+    router.replace('/auth');
+    return null;
   }
 
   const handleSaveProfile = async () => {
@@ -133,7 +139,7 @@ export default function Profile() {
               <Package className="w-12 h-12 mx-auto mb-3 opacity-30" />
               <p>Заказов пока нет</p>
               <Button variant="link" asChild className="mt-2">
-                <Link to="/catalog">Перейти в каталог</Link>
+                <Link href="/catalog">Перейти в каталог</Link>
               </Button>
             </div>
           ) : (

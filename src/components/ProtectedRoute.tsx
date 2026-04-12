@@ -1,4 +1,7 @@
-import { Navigate, useLocation } from 'react-router-dom';
+'use client';
+
+import { useRouter, usePathname } from 'next/navigation';
+import { useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 
 interface ProtectedRouteProps {
@@ -8,7 +11,19 @@ interface ProtectedRouteProps {
 
 export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRouteProps) {
   const { user, isLoading, isAdmin } = useAuth();
-  const location = useLocation();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    if (isLoading) return;
+    if (!user) {
+      router.replace(`/auth?from=${encodeURIComponent(pathname)}`);
+      return;
+    }
+    if (requireAdmin && !isAdmin) {
+      router.replace('/');
+    }
+  }, [user, isLoading, isAdmin, requireAdmin, router, pathname]);
 
   if (isLoading) {
     return (
@@ -21,12 +36,8 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
     );
   }
 
-  if (!user) {
-    return <Navigate to="/auth" state={{ from: location }} replace />;
-  }
-
-  if (requireAdmin && !isAdmin) {
-    return <Navigate to="/" replace />;
+  if (!user || (requireAdmin && !isAdmin)) {
+    return null;
   }
 
   return <>{children}</>;
