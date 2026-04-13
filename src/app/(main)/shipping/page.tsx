@@ -1,4 +1,4 @@
-import Shipping from '@/pages/Shipping';
+﻿import Shipping from '@/views/Shipping';
 
 export default function ShippingPage() {
   return <Shipping />;

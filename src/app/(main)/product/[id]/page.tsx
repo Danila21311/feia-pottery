@@ -1,4 +1,4 @@
-import ProductPage from '@/pages/ProductPage';
+import ProductPage from '@/views/ProductPage';
 
 export default function ProductDetailPage() {
   return <ProductPage />;

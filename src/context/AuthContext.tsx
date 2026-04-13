@@ -38,7 +38,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const checkAuth = useCallback(async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      // Timeout prevents VPN/network hangs from blocking the entire app
+      const sessionPromise = supabase.auth.getSession();
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Auth timeout')), 5000)
+      );
+      const { data: { session } } = await Promise.race([sessionPromise, timeoutPromise]);
       if (!session) {
         setUser(null);
         setIsLoading(false);

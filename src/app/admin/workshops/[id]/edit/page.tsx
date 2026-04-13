@@ -1,4 +1,4 @@
-import AdminWorkshopEdit from '@/pages/Admin/AdminWorkshopEdit';
+import AdminWorkshopEdit from '@/views/Admin/AdminWorkshopEdit';
 
 export default function AdminWorkshopEditPage() {
   return <AdminWorkshopEdit />;

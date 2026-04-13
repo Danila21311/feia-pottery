@@ -45,14 +45,12 @@ export default function Checkout() {
 
   const [isLoading, setIsLoading] = useState(false);
   
-  // Redirect to catalog if cart is empty
   useEffect(() => {
     if (state.cart.length === 0) {
       router.push('/catalog');
     }
   }, [state.cart.length, router]);
 
-  // Load CloudPayments script
   useEffect(() => {
     if (!window.cp) {
       const cpScript = document.createElement('script');

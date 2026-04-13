@@ -1,4 +1,4 @@
-import Contacts from '@/pages/Contacts';
+﻿import Contacts from '@/views/Contacts';
 
 export default function ContactsPage() {
   return <Contacts />;

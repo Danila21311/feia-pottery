@@ -17,7 +17,7 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
   useEffect(() => {
     if (isLoading) return;
     if (!user) {
-      router.replace(`/auth?from=${encodeURIComponent(pathname)}`);
+      router.replace(`/auth?from=${encodeURIComponent(pathname ?? '/')}`);
       return;
     }
     if (requireAdmin && !isAdmin) {

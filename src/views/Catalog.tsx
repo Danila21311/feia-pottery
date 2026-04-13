@@ -135,6 +135,7 @@ export default function Catalog() {
           <Button
             variant={showOnlyNew ? "default" : "outline"}
             onClick={() => setShowOnlyNew(!showOnlyNew)}
+            className={showOnlyNew ? "sage-gradient" : ""}
           >
             Только новинки
           </Button>

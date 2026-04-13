@@ -242,7 +242,7 @@ class ApiClient {
   async createProduct(product: Omit<Product, 'createdAt' | 'updatedAt'>): Promise<Product> {
     const { error } = await supabase
       .from('products')
-      .insert(productToDb(product));
+      .insert(productToDb(product) as any);
     if (error) {
       if (error.code === '23505') throw new ApiError('Товар с таким ID уже существует', 409);
       throw new ApiError(error.message, 400);
@@ -253,7 +253,7 @@ class ApiClient {
   async updateProduct(id: string, updates: Partial<Product>): Promise<Product> {
     const { error } = await supabase
       .from('products')
-      .update(productToDb(updates))
+      .update(productToDb(updates) as any)
       .eq('id', id);
     if (error) throw new ApiError(error.message, 400);
     return { id, ...updates, updatedAt: new Date().toISOString() } as Product;
@@ -289,7 +289,7 @@ class ApiClient {
   async createWorkshop(workshop: Omit<Workshop, 'createdAt' | 'updatedAt'>): Promise<Workshop> {
     const { error } = await supabase
       .from('workshops')
-      .insert(workshopToDb(workshop));
+      .insert(workshopToDb(workshop) as any);
     if (error) throw new ApiError(error.message, 400);
     return { ...workshop, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() } as Workshop;
   }
@@ -297,7 +297,7 @@ class ApiClient {
   async updateWorkshop(id: string, updates: Partial<Workshop>): Promise<Workshop> {
     const { error } = await supabase
       .from('workshops')
-      .update(workshopToDb(updates))
+      .update(workshopToDb(updates) as any)
       .eq('id', id);
     if (error) throw new ApiError(error.message, 400);
     return { id, ...updates, updatedAt: new Date().toISOString() } as Workshop;
@@ -338,9 +338,9 @@ class ApiClient {
         customer_phone: payload.customerPhone,
         customer_email: payload.customerEmail,
         comment: payload.comment ?? null,
-        items: payload.items as unknown as Record<string, unknown>,
+        items: payload.items as any,
         total: payload.total,
-      })
+      } as any)
       .select()
       .single();
     if (error) throw new ApiError(error.message, 400);

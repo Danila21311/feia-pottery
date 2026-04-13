@@ -1,4 +1,4 @@
-import AdminWorkshops from '@/pages/Admin/AdminWorkshops';
+﻿import AdminWorkshops from '@/views/Admin/AdminWorkshops';
 
 export default function AdminWorkshopsPage() {
   return <AdminWorkshops />;

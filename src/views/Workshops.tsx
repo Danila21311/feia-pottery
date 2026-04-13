@@ -63,7 +63,6 @@ export default function Workshops() {
       return;
     }
 
-    // Create mailto link
     const subject = `Запись на мастер-класс: ${selectedWorkshop?.title}`;
     const body = `Здравствуйте! Хочу записаться на мастер-класс.
 
@@ -113,29 +112,6 @@ ${formData.comment ? `Комментарий: ${formData.comment}` : ''}`;
           Откройте для себя удивительный мир керамики. Научитесь создавать уникальные изделия своими руками 
           под руководством опытных мастеров.
         </p>
-      </div>
-
-      {/* Workshop Atmosphere Gallery */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-16">
-        <div className="md:col-span-2">
-          <img 
-            src={teamMain.src}
-            alt="Мастерская Feia — атмосфера творчества"
-            className="w-full h-72 md:h-80 object-cover rounded-lg pottery-shadow"
-          />
-        </div>
-        <div className="space-y-4">
-          <img 
-            src={teamCollage1.src}
-            alt="Участники мастер-класса за работой"
-            className="w-full h-[calc(50%-0.5rem)] object-cover rounded-lg pottery-shadow"
-          />
-          <img 
-            src={teamCollage2.src}
-            alt="Готовые керамические изделия"
-            className="w-full h-[calc(50%-0.5rem)] object-cover rounded-lg pottery-shadow"
-          />
-        </div>
       </div>
 
       {/* Workshops Grid */}

@@ -24,12 +24,10 @@ export default function Home() {
     api.getProducts().then((items) => {
       const all = items as unknown as Product[];
       const newOnes = all.filter(p => p.isNew);
-      // Show new products if any, otherwise show latest 6
       setFeaturedProducts(newOnes.length > 0 ? newOnes : all.slice(0, 6));
     }).catch(console.error);
   }, []);
   
-  // Animation hooks for different sections
   const aboutAnimation = useScrollAnimation(0.1);
   const newProductsAnimation = useScrollAnimation(0.1);
   const categoriesAnimation = useScrollAnimation(0.1);

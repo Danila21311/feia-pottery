@@ -157,6 +157,7 @@ Elegant earth-tone palette with organic ceramics aesthetic
   
   .sage-gradient {
     background: var(--gradient-sage);
+    color: white;
   }
   
   .pottery-shadow {
