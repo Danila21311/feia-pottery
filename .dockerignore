@@ -10,5 +10,3 @@ npm-debug.log*
 *.md
 !README.md
 terminals
-supabase/.branches
-supabase/.temp

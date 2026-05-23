@@ -7,8 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "db:migrate": "node scripts/migrate.mjs",
-    "db:import-supabase": "node scripts/migrate-from-supabase.mjs"
+    "db:migrate": "node scripts/migrate.mjs"
   },
   "dependencies": {
     "@fontsource/lato": "^5.2.7",

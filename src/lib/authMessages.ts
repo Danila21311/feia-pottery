@@ -1,9 +1,8 @@
 /**
- * Перевод типичных ответов Supabase GoTrue в понятный русский текст.
- * Сырые HTTP 400/403 в консоли браузера при этом могут оставаться — это ограничение DevTools.
+ * Перевод типичных кодов/сообщений авторизации в понятный русский текст.
  */
 
-export function mapSupabaseAuthMessage(raw: string): string {
+export function mapAuthErrorMessage(raw: string): string {
   const m = (raw || '').trim().toLowerCase();
 
   if (!m) {

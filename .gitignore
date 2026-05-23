@@ -39,14 +39,10 @@ lerna-debug.log*
 # Test coverage
 coverage/
 
-# PostgreSQL / дампы для миграции (scripts/migrate-from-supabase.mjs)
+# PostgreSQL / локальные дампы
 dump/
 *.dump
 *.sql.gz
-
-# Supabase CLI (архив migrations в repo — не игнорируем; только локальный кэш CLI)
-supabase/.branches/
-supabase/.temp/
 
 # Docker (локальные override, не Dockerfile)
 docker-compose.override.yml

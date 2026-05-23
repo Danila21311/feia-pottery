@@ -1,5 +1,5 @@
 import { signIn } from '@/auth';
-import { mapSupabaseAuthMessage } from '@/lib/authMessages';
+import { mapAuthErrorMessage } from '@/lib/authMessages';
 import { findUserByEmail, getUserProfile } from '@/lib/repositories/users';
 import { apiError, apiOk, apiServerError } from '@/app/api/_lib/response';
 import { sessionUserToApi } from '@/app/api/_lib/auth';
@@ -26,17 +26,17 @@ export async function POST(request: Request) {
     });
 
     if (result && typeof result === 'object' && 'error' in result && result.error) {
-      return apiError(mapSupabaseAuthMessage('Invalid login credentials'), 401);
+      return apiError(mapAuthErrorMessage('Invalid login credentials'), 401);
     }
 
     const dbUser = await findUserByEmail(email);
     if (!dbUser) {
-      return apiError(mapSupabaseAuthMessage('Invalid login credentials'), 401);
+      return apiError(mapAuthErrorMessage('Invalid login credentials'), 401);
     }
 
     const user = await getUserProfile(dbUser.id);
     if (!user) {
-      return apiError(mapSupabaseAuthMessage('Invalid login credentials'), 401);
+      return apiError(mapAuthErrorMessage('Invalid login credentials'), 401);
     }
 
     return apiOk({ user: sessionUserToApi(user) });
