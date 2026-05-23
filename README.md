@@ -83,6 +83,15 @@ npm run db:migrate
 
 При деплое на Railway миграции запускаются автоматически перед стартом (`Dockerfile` → `node scripts/migrate.mjs`).
 
+<<<<<<< HEAD
+=======
+## Импорт данных из Supabase
+
+См. `scripts/migrate-from-supabase.mjs` и `npm run db:import-supabase`.
+
+Пароли пользователей Supabase Auth **не переносятся** — после cutover нужен сброс пароля или временный `DEFAULT_PASSWORD` при импорте.
+
+>>>>>>> aafce916dfc273a2cb476687083f96f9d74143f1
 ## API (основные группы)
 
 - Auth: `/api/auth/login`, `/api/auth/register`, `/api/auth/logout`, `/api/auth/me`.
