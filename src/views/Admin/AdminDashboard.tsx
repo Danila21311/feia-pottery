@@ -3,8 +3,6 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { api, Product, Workshop } from '@/lib/api';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Package, Calendar, TrendingUp, Users } from 'lucide-react';
 
 export default function AdminDashboard() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -15,8 +13,8 @@ export default function AdminDashboard() {
     async function loadData() {
       try {
         const [productsData, workshopsData] = await Promise.all([
-          api.getProducts(),
-          api.getWorkshops(),
+          api.getAdminProducts(),
+          api.getAdminWorkshops(),
         ]);
         setProducts(productsData);
         setWorkshops(workshopsData);
@@ -30,125 +28,94 @@ export default function AdminDashboard() {
   }, []);
 
   const stats = [
-    {
-      name: 'Всего товаров',
-      value: products.length,
-      icon: Package,
-      href: '/admin/products',
-      color: 'text-primary',
-    },
-    {
-      name: 'В наличии',
-      value: products.filter(p => p.inStock).length,
-      icon: TrendingUp,
-      href: '/admin/products',
-      color: 'text-green-600',
-    },
-    {
-      name: 'Мастер-классов',
-      value: workshops.length,
-      icon: Calendar,
-      href: '/admin/workshops',
-      color: 'text-blue-600',
-    },
+    { name: 'Всего товаров', value: products.length, href: '/admin/products' },
+    { name: 'В каталоге', value: products.filter((p) => p.isPublished).length, href: '/admin/products' },
+    { name: 'В наличии', value: products.filter((p) => p.inStock && p.isPublished).length, href: '/admin/products' },
+    { name: 'Мастер-классов', value: workshops.filter((w) => w.isPublished).length, href: '/admin/workshops' },
     {
       name: 'Участников записано',
       value: workshops.reduce((sum, w) => sum + w.currentParticipants, 0),
-      icon: Users,
       href: '/admin/workshops',
-      color: 'text-purple-600',
     },
   ];
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground/30" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       <div>
         <h1 className="text-2xl md:text-3xl font-serif font-semibold text-foreground">Панель управления</h1>
-        <p className="text-muted-foreground mt-2">Добро пожаловать в административную панель Feia</p>
+        <p className="text-sm text-muted-foreground mt-1">Заказы и мастер-классы Фея</p>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10 border-b border-border/50 pb-10">
         {stats.map((stat) => (
-          <Link key={stat.name} href={stat.href}>
-            <Card className="pottery-card hover:border-primary/50 transition-colors">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  {stat.name}
-                </CardTitle>
-                <stat.icon className={`h-5 w-5 ${stat.color}`} />
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">{stat.value}</div>
-              </CardContent>
-            </Card>
+          <Link key={stat.name} href={stat.href} className="group block">
+            <p className="text-[0.65rem] uppercase tracking-[0.2em] text-muted-foreground">{stat.name}</p>
+            <p className="mt-2 text-3xl font-serif font-medium text-foreground tabular-nums group-hover:opacity-80 transition-opacity">
+              {stat.value}
+            </p>
           </Link>
         ))}
       </div>
 
-      {/* Recent Items */}
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Recent Products */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-              <span>Последние товары</span>
-              <Link href="/admin/products" className="text-sm text-primary hover:underline">
-                Все товары →
-              </Link>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-3">
-              {products.slice(0, 5).map((product) => (
-                <li key={product.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
-                  <div>
-                    <p className="font-medium">{product.name}</p>
-                    <p className="text-sm text-muted-foreground">{product.category}</p>
-                  </div>
-                  <p className="font-medium sm:text-right">{product.price.toLocaleString('ru-RU')} ₽</p>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
+      <div className="grid gap-10 md:grid-cols-2 md:gap-14">
+        <section>
+          <div className="flex items-baseline justify-between gap-4 border-b border-border/50 pb-3 mb-4">
+            <h2 className="font-serif text-lg font-medium text-foreground">Последние товары</h2>
+            <Link href="/admin/products" className="text-xs uppercase tracking-wide text-muted-foreground hover:text-foreground">
+              Все товары →
+            </Link>
+          </div>
+          <ul className="divide-y divide-border/40">
+            {products.slice(0, 5).map((product) => (
+              <li key={product.id} className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1 py-3 first:pt-0">
+                <div>
+                  <p className="text-sm font-medium">{product.name}</p>
+                  <p className="text-xs text-muted-foreground">{product.category}</p>
+                </div>
+                <p className="text-sm tabular-nums sm:text-right">{product.price.toLocaleString('ru-RU')} ₽</p>
+              </li>
+            ))}
+          </ul>
+        </section>
 
-        {/* Upcoming Workshops */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-              <span>Ближайшие мастер-классы</span>
-              <Link href="/admin/workshops" className="text-sm text-primary hover:underline">
-                Все МК →
-              </Link>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-3">
-              {workshops.slice(0, 5).map((workshop) => (
-                <li key={workshop.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+        <section>
+          <div className="flex items-baseline justify-between gap-4 border-b border-border/50 pb-3 mb-4">
+            <h2 className="font-serif text-lg font-medium text-foreground">Ближайшие мастер-классы</h2>
+            <Link href="/admin/workshops" className="text-xs uppercase tracking-wide text-muted-foreground hover:text-foreground">
+              Все МК →
+            </Link>
+          </div>
+          <ul className="divide-y divide-border/40">
+            {workshops.length === 0 ? (
+              <li className="py-6 text-sm text-muted-foreground">Сеансов пока нет</li>
+            ) : (
+              workshops.slice(0, 5).map((workshop) => (
+                <li
+                  key={workshop.id}
+                  className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1 py-3 first:pt-0"
+                >
                   <div>
-                    <p className="font-medium">{workshop.title}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {workshop.date} • {workshop.time}
+                    <p className="text-sm font-medium">{workshop.title}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {workshop.date} · {workshop.time}
                     </p>
                   </div>
-                  <p className="text-sm text-muted-foreground sm:text-right">
+                  <p className="text-xs text-muted-foreground tabular-nums sm:text-right">
                     {workshop.currentParticipants}/{workshop.maxParticipants}
                   </p>
                 </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
+              ))
+            )}
+          </ul>
+        </section>
       </div>
     </div>
   );

@@ -1,12 +1,7 @@
-import { MapPin, Phone, Mail, Instagram } from 'lucide-react';
+import { MapPin, Phone, Mail } from 'lucide-react';
 import Link from 'next/link';
 
 export function Footer() {
-  const socialLinks = [
-    { icon: Instagram, href: 'https://instagram.com/feia.pottery', label: 'Instagram' },
-    { icon: Mail, href: 'mailto:hello@feia.studio', label: 'Email' },
-  ];
-
   const footerLinks = [
     { name: 'Политика конфиденциальности', href: '/privacy' },
     { name: 'Публичная оферта', href: '/terms' },
@@ -18,29 +13,15 @@ export function Footer() {
     <footer className="bg-secondary border-t border-border mt-16">
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-          {/* Brand & Description */}
+          
           <div>
-            <h3 className="text-2xl font-serif font-semibold text-primary mb-4">Feia</h3>
+            <h3 className="text-2xl font-serif font-semibold text-primary mb-4">Фея</h3>
             <p className="text-muted-foreground mb-4">
               Мастерская уникальной керамики ручной работы. Каждое изделие создается с любовью 
               из натуральной глины и несет частичку души мастера.
             </p>
-            <div className="flex space-x-4">
-              {socialLinks.map((social) => (
-                <a
-                  key={social.label}
-                  href={social.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-muted-foreground hover:text-primary transition-colors p-2 rounded-full hover:bg-accent"
-                >
-                  <social.icon className="w-5 h-5" />
-                </a>
-              ))}
-            </div>
           </div>
 
-          {/* Contact Info */}
           <div>
             <h4 className="font-serif font-semibold text-lg mb-4">Контакты</h4>
             <div className="space-y-3">
@@ -48,7 +29,7 @@ export function Footer() {
                 <MapPin className="w-5 h-5 text-muted-foreground mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="text-sm">Звёздный проспект, 26, 2 этаж</p>
-                  <p className="text-sm text-muted-foreground">Мастерская Feia</p>
+                  <p className="text-sm text-muted-foreground">Мастерская Фея</p>
                 </div>
               </div>
               <div className="flex items-center space-x-3">
@@ -101,7 +82,7 @@ export function Footer() {
               ))}
             </div>
             <p className="text-sm text-muted-foreground">
-              © 2025 Feia. Все права защищены.
+              © 2026 Фея. Все права защищены.
             </p>
           </div>
         </div>

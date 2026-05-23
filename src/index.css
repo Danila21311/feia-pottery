@@ -1,56 +1,66 @@
+/* Локальные шрифты (@fontsource), без запросов к Google Fonts при сборке и в браузере */
+@import '@fontsource/playfair-display/cyrillic-400.css';
+@import '@fontsource/playfair-display/latin-400.css';
+@import '@fontsource/playfair-display/cyrillic-600.css';
+@import '@fontsource/playfair-display/latin-600.css';
+@import '@fontsource/playfair-display/cyrillic-700.css';
+@import '@fontsource/playfair-display/latin-700.css';
+@import '@fontsource/lato/300.css';
+@import '@fontsource/lato/400.css';
+@import '@fontsource/lato/700.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Feia Pottery Workshop Design System 
+/* Фея Pottery Workshop Design System 
 Elegant earth-tone palette with organic ceramics aesthetic
 */
 
 @layer base {
   :root {
-    /* Base colors - warm whites and creams */
-    --background: 34 39% 97%;        /* Warm cream white #faf8f5 */
-    --foreground: 27 18% 25%;        /* Deep warm brown #433a34 */
+    /* Шрифты (см. @import выше) — для Tailwind font-serif / font-sans */
+    --font-playfair: 'Playfair Display', 'Times New Roman', serif;
+    --font-lato: 'Lato', system-ui, sans-serif;
+
+    /* Tor Pottery inspired palette */
+    --background: 38 38% 93%;        /* warm parchment */
+    --foreground: 24 13% 17%;        /* deep warm charcoal */
 
     /* Card and surfaces */
-    --card: 34 39% 97%;
-    --card-foreground: 27 18% 25%;
+    --card: 38 35% 95%;
+    --card-foreground: 24 13% 17%;
 
-    --popover: 34 39% 97%;
-    --popover-foreground: 27 18% 25%;
+    --popover: 38 35% 95%;
+    --popover-foreground: 24 13% 17%;
 
-    /* Primary - sage green from palette */
-    --primary: 159 21% 35%;          /* Sage green #4a6b5f */
-    --primary-foreground: 34 39% 97%; /* Cream white for good contrast */
+    --primary: 31 21% 39%;           /* earthy brown */
+    --primary-foreground: 38 35% 96%;
 
-    /* Secondary - warm beige tones */
-    --secondary: 37 25% 89%;         /* Light beige #f5f0e6 */
-    --secondary-foreground: 27 18% 25%;
+    --secondary: 33 29% 83%;         /* warm sand */
+    --secondary-foreground: 24 13% 17%;
 
-    /* Muted backgrounds */
-    --muted: 37 25% 89%;             /* Light beige #f5f0e6 */
-    --muted-foreground: 27 18% 45%;  /* Darker brown for better contrast */
+    --muted: 36 24% 88%;
+    --muted-foreground: 25 10% 34%;
 
-    /* Accent - deeper beige */
-    --accent: 40 20% 84%;            /* Deeper beige #e8dcc5 */
-    --accent-foreground: 27 18% 25%;
+    --accent: 31 34% 70%;            /* clay */
+    --accent-foreground: 24 13% 17%;
 
     --destructive: 0 84% 60%;
-    --destructive-foreground: 34 39% 97%;
+    --destructive-foreground: 38 35% 96%;
 
-    /* Borders and inputs - subtle beige */
-    --border: 40 20% 84%;            /* Matching accent */
-    --input: 40 20% 84%;
-    --ring: 159 21% 35%;             /* Primary sage green */
+    --border: 33 20% 76%;
+    --input: 33 20% 76%;
+    --ring: 31 21% 39%;
 
-    --radius: 0.75rem;               /* Slightly more rounded */
+    --radius: 0.45rem;
 
     /* Custom pottery theme colors */
-    --pottery-sage: 159 21% 35%;     /* Primary sage #4a6b5f */
-    --pottery-sage-light: 159 21% 45%; /* Lighter sage #6b8e7e */
-    --pottery-warm: 37 25% 89%;      /* Warm beige #f5f0e6 */
-    --pottery-earth: 40 20% 84%;     /* Earth beige #e8dcc5 */
-    --pottery-clay: 27 30% 70%;      /* Clay brown for accents */
+    --pottery-sage: 101 12% 41%;     /* muted olive-green accent */
+    --pottery-sage-light: 101 13% 49%;
+    --pottery-warm: 38 38% 93%;
+    --pottery-earth: 33 29% 83%;
+    --pottery-clay: 31 34% 70%;
     
     /* Gradients */
     --gradient-hero: linear-gradient(135deg, hsl(var(--pottery-warm)), hsl(var(--pottery-earth)));
@@ -58,29 +68,29 @@ Elegant earth-tone palette with organic ceramics aesthetic
     --gradient-sage: linear-gradient(135deg, hsl(var(--pottery-sage)), hsl(var(--pottery-sage-light)));
     
     /* Shadows - organic and soft */
-    --shadow-soft: 0 4px 20px -4px hsl(var(--pottery-sage) / 0.1);
-    --shadow-card: 0 8px 30px -8px hsl(var(--pottery-sage) / 0.15);
-    --shadow-hero: 0 20px 60px -20px hsl(var(--pottery-sage) / 0.2);
+    --shadow-soft: 0 10px 24px -14px hsl(24 13% 17% / 0.16);
+    --shadow-card: 0 18px 38px -24px hsl(24 13% 17% / 0.2);
+    --shadow-hero: 0 36px 84px -42px hsl(24 13% 17% / 0.24);
     
     /* Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
-    --sidebar-background: 0 0% 98%;
+    --sidebar-background: 38 35% 95%;
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-foreground: 24 13% 17%;
 
-    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary: 31 21% 39%;
 
-    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-primary-foreground: 38 35% 96%;
 
-    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent: 36 24% 88%;
 
-    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-accent-foreground: 24 13% 17%;
 
-    --sidebar-border: 220 13% 91%;
+    --sidebar-border: 33 20% 76%;
 
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-ring: 31 21% 39%;
   }
 
   .dark {
@@ -184,7 +194,7 @@ Elegant earth-tone palette with organic ceramics aesthetic
   
   ::-webkit-scrollbar-thumb {
     background: hsl(var(--pottery-sage));
-    border-radius: 4px;
+    border-radius: 2px;
   }
   
   ::-webkit-scrollbar-thumb:hover {

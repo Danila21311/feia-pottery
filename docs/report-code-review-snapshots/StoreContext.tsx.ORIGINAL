@@ -1,0 +1,205 @@
+'use client';
+
+import React, { createContext, useContext, useReducer, useEffect, useRef } from 'react';
+import { useAuth } from '@/context/AuthContext';
+
+export interface Product {
+  id: string;
+  name: string;
+  price: number;
+  category: string;
+  images: string[];
+  description: string;
+  dimensions: string;
+  care: string;
+  inStock: boolean;
+  isNew: boolean;
+  collection: string;
+}
+
+export interface CartItem extends Product {
+  quantity: number;
+}
+
+/** Элемент корзины каталога (подарочные сертификаты оформляются отдельной заявкой, без корзины). */
+type CartItemType = Product & { quantity: number };
+
+interface StoreState {
+  cart: CartItemType[];
+  wishlist: Product[];
+  isCartOpen: boolean;
+  isWishlistOpen: boolean;
+}
+
+type StoreAction =
+  | { type: 'ADD_TO_CART'; payload: Product }
+  | { type: 'REMOVE_FROM_CART'; payload: string }
+  | { type: 'UPDATE_CART_QUANTITY'; payload: { id: string; quantity: number } }
+  | { type: 'CLEAR_CART' }
+  | { type: 'ADD_TO_WISHLIST'; payload: Product }
+  | { type: 'REMOVE_FROM_WISHLIST'; payload: string }
+  | { type: 'TOGGLE_CART' }
+  | { type: 'TOGGLE_WISHLIST' }
+  | { type: 'CLOSE_MODALS' }
+  | { type: 'LOAD_STATE'; payload: Partial<StoreState> };
+
+const initialState: StoreState = {
+  cart: [],
+  wishlist: [],
+  isCartOpen: false,
+  isWishlistOpen: false,
+};
+
+function storeReducer(state: StoreState, action: StoreAction): StoreState {
+  switch (action.type) {
+    case 'ADD_TO_CART': {
+      const existingItem = state.cart.find((item) => item.id === action.payload.id);
+      if (existingItem) {
+        return {
+          ...state,
+          cart: state.cart.map((item) =>
+            item.id === action.payload.id ? { ...item, quantity: item.quantity + 1 } : item,
+          ),
+        };
+      }
+      return {
+        ...state,
+        cart: [...state.cart, { ...action.payload, quantity: 1 }],
+      };
+    }
+    
+    case 'REMOVE_FROM_CART':
+      return {
+        ...state,
+        cart: state.cart.filter(item => item.id !== action.payload),
+      };
+      
+    case 'UPDATE_CART_QUANTITY':
+      return {
+        ...state,
+        cart: state.cart.map(item =>
+          item.id === action.payload.id
+            ? { ...item, quantity: action.payload.quantity }
+            : item
+        ).filter(item => item.quantity > 0),
+      };
+      
+    case 'CLEAR_CART':
+      return {
+        ...state,
+        cart: [],
+      };
+      
+    case 'ADD_TO_WISHLIST': {
+      const exists = state.wishlist.find(item => item.id === action.payload.id);
+      if (exists) return state;
+      return {
+        ...state,
+        wishlist: [...state.wishlist, action.payload],
+      };
+    }
+    
+    case 'REMOVE_FROM_WISHLIST':
+      return {
+        ...state,
+        wishlist: state.wishlist.filter(item => item.id !== action.payload),
+      };
+      
+    case 'TOGGLE_CART':
+      return {
+        ...state,
+        isCartOpen: !state.isCartOpen,
+        isWishlistOpen: false,
+      };
+      
+    case 'TOGGLE_WISHLIST':
+      return {
+        ...state,
+        isWishlistOpen: !state.isWishlistOpen,
+        isCartOpen: false,
+      };
+      
+    case 'CLOSE_MODALS':
+      return {
+        ...state,
+        isCartOpen: false,
+        isWishlistOpen: false,
+      };
+      
+    case 'LOAD_STATE':
+      return {
+        ...state,
+        ...action.payload,
+      };
+      
+    default:
+      return state;
+  }
+}
+
+const StoreContext = createContext<{
+  state: StoreState;
+  dispatch: React.Dispatch<StoreAction>;
+} | null>(null);
+
+export function StoreProvider({ children }: { children: React.ReactNode }) {
+  const [state, dispatch] = useReducer(storeReducer, initialState);
+  const { user } = useAuth();
+  const prevUserIdRef = useRef<string | null>(null);
+
+  // Wishlist key scoped to user; cart is always shared (anonymous checkout)
+  const wishlistKey = user ? `feiaWishlist_${user.id}` : null;
+
+  // Load from localStorage on mount and when user changes
+  useEffect(() => {
+    const savedCart = localStorage.getItem('feiaCart');
+    const savedWishlist = wishlistKey ? localStorage.getItem(wishlistKey) : null;
+
+    const rawCart = savedCart ? JSON.parse(savedCart) : [];
+    const cart = Array.isArray(rawCart)
+      ? rawCart.filter(
+          (item: unknown) =>
+            item &&
+            typeof item === 'object' &&
+            'id' in item &&
+            !('type' in item && (item as { type?: string }).type === 'giftCard'),
+        )
+      : [];
+
+    dispatch({
+      type: 'LOAD_STATE',
+      payload: {
+        cart,
+        wishlist: savedWishlist ? JSON.parse(savedWishlist) : [],
+      },
+    });
+
+    prevUserIdRef.current = user?.id ?? null;
+  }, [user?.id, wishlistKey]);
+
+  // Save cart to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem('feiaCart', JSON.stringify(state.cart));
+  }, [state.cart]);
+
+  // Save wishlist to user-scoped localStorage when it changes
+  useEffect(() => {
+    if (wishlistKey) {
+      localStorage.setItem(wishlistKey, JSON.stringify(state.wishlist));
+    }
+  }, [state.wishlist, wishlistKey]);
+
+  return (
+    <StoreContext.Provider value={{ state, dispatch }}>
+      {children}
+    </StoreContext.Provider>
+  );
+}
+
+export function useStore() {
+  const context = useContext(StoreContext);
+  if (!context) {
+    throw new Error('useStore must be used within a StoreProvider');
+  }
+  return context;
+}

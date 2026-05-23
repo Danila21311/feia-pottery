@@ -1,7 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { api, User } from '@/lib/api';
 
 interface AuthContextType {
@@ -19,75 +18,31 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  // Guard to prevent onAuthStateChange from re-fetching user
-  // when login/register already set it
-  const skipNextAuthEvent = useRef(false);
 
   const isAdmin = user?.roles?.includes('admin') ?? false;
 
-  const fetchAndSetUser = useCallback(async (): Promise<User | null> => {
-    try {
-      const { user } = await api.getMe();
-      setUser(user);
-      return user;
-    } catch {
-      setUser(null);
-      return null;
-    }
-  }, []);
-
   const checkAuth = useCallback(async () => {
+    setIsLoading(true);
     try {
-      // Timeout prevents VPN/network hangs from blocking the entire app
-      const sessionPromise = supabase.auth.getSession();
-      const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('Auth timeout')), 5000)
-      );
-      const { data: { session } } = await Promise.race([sessionPromise, timeoutPromise]);
-      if (!session) {
-        setUser(null);
-        setIsLoading(false);
-        return;
-      }
-      await fetchAndSetUser();
+      const { user: me } = await api.getMe();
+      setUser(me);
     } catch {
       setUser(null);
     } finally {
       setIsLoading(false);
     }
-  }, [fetchAndSetUser]);
+  }, []);
 
   useEffect(() => {
     checkAuth();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (event === 'SIGNED_OUT' || !session) {
-          setUser(null);
-          return;
-        }
-        // Skip if login/register already handled this
-        if (skipNextAuthEvent.current) {
-          skipNextAuthEvent.current = false;
-          return;
-        }
-        if (event === 'TOKEN_REFRESHED') {
-          await fetchAndSetUser();
-        }
-      }
-    );
-
-    return () => subscription.unsubscribe();
-  }, [checkAuth, fetchAndSetUser]);
+  }, [checkAuth]);
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      skipNextAuthEvent.current = true;
       const result = await api.login(email, password);
       setUser(result.user);
     } catch (error) {
-      skipNextAuthEvent.current = false;
       setUser(null);
       throw error;
     } finally {
@@ -98,11 +53,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const register = async (email: string, password: string, name: string) => {
     setIsLoading(true);
     try {
-      skipNextAuthEvent.current = true;
       const result = await api.register(email, password, name);
       setUser(result.user);
     } catch (error) {
-      skipNextAuthEvent.current = false;
       setUser(null);
       throw error;
     } finally {
@@ -111,12 +64,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = async () => {
+    setUser(null);
     try {
       await api.logout();
     } catch {
-      // Ignore errors on logout
-    } finally {
-      setUser(null);
+      // сессия в UI уже сброшена
     }
   };
 

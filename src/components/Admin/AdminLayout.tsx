@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { AdminSidebar } from './AdminSidebar';
 import { Button } from '@/components/ui/button';
-import { Menu, X } from 'lucide-react';
+import { Menu } from 'lucide-react';
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -34,7 +34,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
           <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(true)}>
             <Menu className="w-5 h-5" />
           </Button>
-          <span className="font-serif font-semibold text-primary">Feia Admin</span>
+          <span className="font-serif font-semibold text-primary">Фея панель управления</span>
         </div>
 
         <div className="p-4 md:p-6 lg:p-8">

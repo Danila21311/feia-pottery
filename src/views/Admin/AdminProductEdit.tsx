@@ -6,15 +6,15 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { api, Product, ApiError } from '@/lib/api';
-import { uploadImage } from '@/lib/cloudinary';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Plus, X, Upload, Loader2 } from 'lucide-react';
+import { minimalInputClass, minimalSelectClass, minimalTextareaClass } from '@/lib/formFieldStyles';
 
 const productSchema = z.object({
   id: z.string().min(1, 'ID обязателен').regex(/^[a-z0-9-]+$/, 'Только строчные буквы, цифры и дефис'),
@@ -104,8 +104,8 @@ export default function AdminProductEdit() {
   const handleFileUpload = async (index: number, file: File) => {
     setUploadingIndex(index);
     try {
-      const result = await uploadImage(file, 'feia/products');
-      setValue(`images.${index}.url`, result.secure_url);
+      const result = await api.uploadImage(file, 'feia/products');
+      setValue(`images.${index}.url`, result.url);
       toast({ title: 'Фото загружено' });
     } catch (error) {
       toast({
@@ -155,7 +155,7 @@ export default function AdminProductEdit() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground/30" />
       </div>
     );
   }
@@ -176,150 +176,125 @@ export default function AdminProductEdit() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        <div className="grid gap-6 md:grid-cols-2">
-          {/* Basic Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Основная информация</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="id">ID товара</Label>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-10">
+        <div className="grid gap-10 md:grid-cols-2 md:gap-14">
+          <section className="space-y-4 border-b border-border/50 pb-8 md:border-0 md:pb-0">
+            <h2 className="text-[0.65rem] uppercase tracking-[0.18em] text-muted-foreground">Основная информация</h2>
+            <div className="space-y-5 max-w-lg">
+              <div className="space-y-1.5">
+                <Label htmlFor="id" className="text-xs text-muted-foreground font-normal">
+                  ID товара
+                </Label>
                 <Input
                   id="id"
                   placeholder="ceramic-bowl-sage"
                   disabled={isEditing}
+                  className={minimalInputClass}
                   {...register('id')}
                 />
-                {errors.id && (
-                  <p className="text-sm text-destructive">{errors.id.message}</p>
-                )}
+                {errors.id && <p className="text-sm text-destructive">{errors.id.message}</p>}
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="name">Название</Label>
-                <Input
-                  id="name"
-                  placeholder="Керамическая миска"
-                  {...register('name')}
-                />
-                {errors.name && (
-                  <p className="text-sm text-destructive">{errors.name.message}</p>
-                )}
+              <div className="space-y-1.5">
+                <Label htmlFor="name" className="text-xs text-muted-foreground font-normal">
+                  Название
+                </Label>
+                <Input id="name" placeholder="Керамическая миска" className={minimalInputClass} {...register('name')} />
+                {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="price">Цена (₽)</Label>
-                <Input
-                  id="price"
-                  type="number"
-                  min={0}
-                  {...register('price')}
-                />
-                {errors.price && (
-                  <p className="text-sm text-destructive">{errors.price.message}</p>
-                )}
+              <div className="space-y-1.5">
+                <Label htmlFor="price" className="text-xs text-muted-foreground font-normal">
+                  Цена (₽)
+                </Label>
+                <Input id="price" type="number" min={0} className={minimalInputClass} {...register('price')} />
+                {errors.price && <p className="text-sm text-destructive">{errors.price.message}</p>}
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="category">Категория</Label>
-                <select
-                  id="category"
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
-                  {...register('category')}
-                >
-                  {categories.map(cat => (
-                    <option key={cat} value={cat}>{cat}</option>
+              <div className="space-y-1.5">
+                <Label htmlFor="category" className="text-xs text-muted-foreground font-normal">
+                  Категория
+                </Label>
+                <select id="category" className={minimalSelectClass} {...register('category')}>
+                  {categories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
                   ))}
                 </select>
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="collection">Коллекция</Label>
-                <Input
-                  id="collection"
-                  placeholder="Минимализм"
-                  {...register('collection')}
-                />
+              <div className="space-y-1.5">
+                <Label htmlFor="collection" className="text-xs text-muted-foreground font-normal">
+                  Коллекция
+                </Label>
+                <Input id="collection" placeholder="Минимализм" className={minimalInputClass} {...register('collection')} />
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </section>
 
-          {/* Status & Details */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Статус и детали</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="inStock">В наличии</Label>
+          <section className="space-y-4 border-b border-border/50 pb-8 md:border-0 md:pb-0">
+            <h2 className="text-[0.65rem] uppercase tracking-[0.18em] text-muted-foreground">Наличие и детали</h2>
+            <div className="space-y-5 max-w-lg">
+              <div className="flex items-center justify-between gap-4 border-b border-border/40 pb-3">
+                <Label htmlFor="inStock" className="text-sm font-normal">
+                  В наличии
+                </Label>
                 <Switch
                   id="inStock"
                   checked={watch('inStock')}
                   onCheckedChange={(checked) => setValue('inStock', checked)}
                 />
               </div>
-
-              <div className="flex items-center justify-between">
-                <Label htmlFor="isNew">Новинка</Label>
-                <Switch
-                  id="isNew"
-                  checked={watch('isNew')}
-                  onCheckedChange={(checked) => setValue('isNew', checked)}
-                />
+              <div className="flex items-center justify-between gap-4 border-b border-border/40 pb-3">
+                <Label htmlFor="isNew" className="text-sm font-normal">
+                  Новинка
+                </Label>
+                <Switch id="isNew" checked={watch('isNew')} onCheckedChange={(checked) => setValue('isNew', checked)} />
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="dimensions">Размеры</Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="dimensions" className="text-xs text-muted-foreground font-normal">
+                  Размеры
+                </Label>
                 <Input
                   id="dimensions"
                   placeholder="Диаметр 18 см, высота 8 см"
+                  className={minimalInputClass}
                   {...register('dimensions')}
                 />
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="care">Уход</Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="care" className="text-xs text-muted-foreground font-normal">
+                  Уход
+                </Label>
                 <Input
                   id="care"
                   placeholder="Можно мыть в посудомоечной машине"
+                  className={minimalInputClass}
                   {...register('care')}
                 />
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </section>
         </div>
 
-        {/* Description */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Описание</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Textarea
-              placeholder="Подробное описание товара..."
-              className="min-h-32"
-              {...register('description')}
-            />
-          </CardContent>
-        </Card>
+        <section className="space-y-4 border-b border-border/50 pb-8">
+          <h2 className="text-[0.65rem] uppercase tracking-[0.18em] text-muted-foreground">Описание</h2>
+          <Textarea
+            placeholder="Подробное описание товара..."
+            className={cn(minimalTextareaClass, 'min-h-[140px]')}
+            {...register('description')}
+          />
+        </section>
 
-        {/* Images */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Изображения</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+        <section className="space-y-4 pb-2">
+          <h2 className="text-[0.65rem] uppercase tracking-[0.18em] text-muted-foreground">Изображения</h2>
+          <div className="space-y-4 max-w-3xl">
             {fields.map((field, index) => (
               <div key={field.id} className="space-y-2">
                 <div className="flex gap-2 items-start">
                   <Input
                     placeholder="URL изображения"
-                    className="min-w-0"
+                    className={cn(minimalInputClass, 'min-w-0 flex-1')}
                     {...register(`images.${index}.url`)}
                   />
-                  <label className="cursor-pointer">
+                  <label className="cursor-pointer shrink-0">
                     <input
                       type="file"
                       accept="image/*"
@@ -329,18 +304,13 @@ export default function AdminProductEdit() {
                         if (file) handleFileUpload(index, file);
                       }}
                     />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      className="shrink-0"
-                      disabled={uploadingIndex === index}
-                      asChild
-                    >
+                    <Button type="button" variant="outline" size="icon" className="border-border/50" disabled={uploadingIndex === index} asChild>
                       <span>
-                        {uploadingIndex === index
-                          ? <Loader2 className="w-4 h-4 animate-spin" />
-                          : <Upload className="w-4 h-4" />}
+                        {uploadingIndex === index ? (
+                          <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                        ) : (
+                          <Upload className="w-4 h-4 text-muted-foreground" />
+                        )}
                       </span>
                     </Button>
                   </label>
@@ -348,7 +318,7 @@ export default function AdminProductEdit() {
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="shrink-0"
+                    className="shrink-0 text-muted-foreground"
                     onClick={() => remove(index)}
                     disabled={fields.length === 1}
                   >
@@ -359,28 +329,23 @@ export default function AdminProductEdit() {
                   <img
                     src={watch(`images.${index}.url`)}
                     alt={`Превью ${index + 1}`}
-                    className="h-24 w-24 object-cover rounded-md border"
+                    className="h-24 w-24 object-cover ring-1 ring-border/40"
                   />
                 )}
               </div>
             ))}
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => append({ url: '' })}
-            >
+            <Button type="button" variant="outline" size="sm" className="border-border/60 text-xs" onClick={() => append({ url: '' })}>
               <Plus className="w-4 h-4 mr-2" />
               Добавить изображение
             </Button>
-          </CardContent>
-        </Card>
+          </div>
+        </section>
 
-        {/* Actions */}
-        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-          <Button type="submit" disabled={isSaving} className="w-full sm:w-auto">
-            {isSaving ? 'Сохранение...' : isEditing ? 'Сохранить изменения' : 'Создать товар'}
+        <div className="flex flex-col sm:flex-row gap-3 pt-2 border-t border-border/50">
+          <Button type="submit" disabled={isSaving} className="w-full sm:w-auto sage-gradient">
+            {isSaving ? 'Сохранение...' : isEditing ? 'Сохранить' : 'Создать товар'}
           </Button>
-          <Button type="button" variant="outline" className="w-full sm:w-auto" onClick={() => router.push('/admin/products')}>
+          <Button type="button" variant="ghost" className="w-full sm:w-auto" onClick={() => router.push('/admin/products')}>
             Отмена
           </Button>
         </div>

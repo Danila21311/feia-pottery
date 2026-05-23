@@ -21,16 +21,8 @@ export interface CartItem extends Product {
   quantity: number;
 }
 
-export interface GiftCard {
-  id: string;
-  type: 'giftCard';
-  amount: number;
-  recipientName: string;
-  message?: string;
-  quantity: number;
-}
-
-type CartItemType = (Product & { quantity: number }) | GiftCard;
+/** Элемент корзины каталога (подарочные сертификаты оформляются отдельной заявкой, без корзины). */
+type CartItemType = Product & { quantity: number };
 
 interface StoreState {
   cart: CartItemType[];
@@ -40,7 +32,7 @@ interface StoreState {
 }
 
 type StoreAction =
-  | { type: 'ADD_TO_CART'; payload: Product | GiftCard }
+  | { type: 'ADD_TO_CART'; payload: Product }
   | { type: 'REMOVE_FROM_CART'; payload: string }
   | { type: 'UPDATE_CART_QUANTITY'; payload: { id: string; quantity: number } }
   | { type: 'CLEAR_CART' }
@@ -61,14 +53,12 @@ const initialState: StoreState = {
 function storeReducer(state: StoreState, action: StoreAction): StoreState {
   switch (action.type) {
     case 'ADD_TO_CART': {
-      const existingItem = state.cart.find(item => item.id === action.payload.id);
+      const existingItem = state.cart.find((item) => item.id === action.payload.id);
       if (existingItem) {
         return {
           ...state,
-          cart: state.cart.map(item =>
-            item.id === action.payload.id
-              ? { ...item, quantity: item.quantity + 1 }
-              : item
+          cart: state.cart.map((item) =>
+            item.id === action.payload.id ? { ...item, quantity: item.quantity + 1 } : item,
           ),
         };
       }
@@ -77,13 +67,13 @@ function storeReducer(state: StoreState, action: StoreAction): StoreState {
         cart: [...state.cart, { ...action.payload, quantity: 1 }],
       };
     }
-    
+
     case 'REMOVE_FROM_CART':
       return {
         ...state,
         cart: state.cart.filter(item => item.id !== action.payload),
       };
-      
+
     case 'UPDATE_CART_QUANTITY':
       return {
         ...state,
@@ -93,13 +83,13 @@ function storeReducer(state: StoreState, action: StoreAction): StoreState {
             : item
         ).filter(item => item.quantity > 0),
       };
-      
+
     case 'CLEAR_CART':
       return {
         ...state,
         cart: [],
       };
-      
+
     case 'ADD_TO_WISHLIST': {
       const exists = state.wishlist.find(item => item.id === action.payload.id);
       if (exists) return state;
@@ -108,40 +98,40 @@ function storeReducer(state: StoreState, action: StoreAction): StoreState {
         wishlist: [...state.wishlist, action.payload],
       };
     }
-    
+
     case 'REMOVE_FROM_WISHLIST':
       return {
         ...state,
         wishlist: state.wishlist.filter(item => item.id !== action.payload),
       };
-      
+
     case 'TOGGLE_CART':
       return {
         ...state,
         isCartOpen: !state.isCartOpen,
         isWishlistOpen: false,
       };
-      
+
     case 'TOGGLE_WISHLIST':
       return {
         ...state,
         isWishlistOpen: !state.isWishlistOpen,
         isCartOpen: false,
       };
-      
+
     case 'CLOSE_MODALS':
       return {
         ...state,
         isCartOpen: false,
         isWishlistOpen: false,
       };
-      
+
     case 'LOAD_STATE':
       return {
         ...state,
         ...action.payload,
       };
-      
+
     default:
       return state;
   }
@@ -157,18 +147,27 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const prevUserIdRef = useRef<string | null>(null);
 
-  // Wishlist key scoped to user; cart is always shared (anonymous checkout)
   const wishlistKey = user ? `feiaWishlist_${user.id}` : null;
 
-  // Load from localStorage on mount and when user changes
   useEffect(() => {
     const savedCart = localStorage.getItem('feiaCart');
     const savedWishlist = wishlistKey ? localStorage.getItem(wishlistKey) : null;
 
+    const rawCart = savedCart ? JSON.parse(savedCart) : [];
+    const cart = Array.isArray(rawCart)
+      ? rawCart.filter(
+          (item: unknown) =>
+            item &&
+            typeof item === 'object' &&
+            'id' in item &&
+            !('type' in item && (item as { type?: string }).type === 'giftCard'),
+        )
+      : [];
+
     dispatch({
       type: 'LOAD_STATE',
       payload: {
-        cart: savedCart ? JSON.parse(savedCart) : [],
+        cart,
         wishlist: savedWishlist ? JSON.parse(savedWishlist) : [],
       },
     });

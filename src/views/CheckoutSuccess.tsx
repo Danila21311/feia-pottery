@@ -16,9 +16,9 @@ export default function CheckoutSuccess() {
 
         {/* Title */}
         <div className="space-y-2">
-          <h1 className="text-2xl md:text-3xl font-serif font-bold">Заказ успешно оформлен!</h1>
+          <h1 className="text-2xl md:text-3xl font-serif font-bold">Заявка на заказ принята!</h1>
           <p className="text-lg text-muted-foreground">
-            Спасибо за покупку в мастерской Feia
+            Спасибо за покупку в мастерской Фея
           </p>
         </div>
 
@@ -33,7 +33,7 @@ export default function CheckoutSuccess() {
                 <div>
                   <p className="font-medium">Подтверждение на почту</p>
                   <p className="text-sm text-muted-foreground">
-                    На указанный email придет подтверждение заказа с деталями
+                    На указанный email придет уведомление о принятии заявки
                   </p>
                 </div>
               </div>
@@ -43,7 +43,7 @@ export default function CheckoutSuccess() {
                 <div>
                   <p className="font-medium">Мы свяжемся с вами</p>
                   <p className="text-sm text-muted-foreground">
-                    В течение 24 часов наш менеджер уточнит детали заказа
+                    Менеджер свяжется с вами для подтверждения и оплаты заказа
                   </p>
                 </div>
               </div>

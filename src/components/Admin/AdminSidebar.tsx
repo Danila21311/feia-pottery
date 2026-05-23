@@ -8,13 +8,14 @@ import {
   LayoutDashboard, 
   Package, 
   Calendar, 
+  ClipboardList,
   LogOut, 
-  ArrowLeft,
-  Settings
+  ArrowLeft
 } from 'lucide-react';
 
 const navigation = [
   { name: 'Обзор', href: '/admin', icon: LayoutDashboard },
+  { name: 'Заявки', href: '/admin/orders', icon: ClipboardList },
   { name: 'Товары', href: '/admin/products', icon: Package },
   { name: 'Мастер-классы', href: '/admin/workshops', icon: Calendar },
 ];
@@ -35,10 +36,10 @@ export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
   };
 
   return (
-    <aside className="w-64 h-full bg-card border-r border-border flex flex-col">
+    <aside className="w-64 h-full bg-background border-r border-border/60 flex flex-col">
       {/* Header */}
       <div className="p-6 border-b border-border">
-        <h1 className="text-xl font-serif font-semibold text-primary">Feia Admin</h1>
+        <h1 className="text-xl font-serif font-semibold text-primary">Фея панель управления</h1>
         <p className="text-sm text-muted-foreground mt-1 truncate">{user?.email}</p>
       </div>
 
@@ -53,10 +54,12 @@ export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
                   isActive(item.href)
                     ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                    : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
                 }`}
               >
-                <item.icon className="w-5 h-5" />
+                <item.icon
+                  className={`w-5 h-5 shrink-0 ${isActive(item.href) ? 'text-primary-foreground' : 'text-muted-foreground'}`}
+                />
                 {item.name}
               </Link>
             </li>

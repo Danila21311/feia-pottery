@@ -33,7 +33,7 @@ export function ProductCard({ product }: ProductCardProps) {
   return (
     <div className="group cursor-pointer">
       {/* Product Image with 4:5 aspect ratio */}
-      <div className="relative aspect-[4/5] overflow-hidden rounded-lg pottery-shadow mb-4">
+      <div className="relative aspect-[4/5] overflow-hidden mb-4">
         <Link href={`/product/${product.id}`}>
           <img
             src={product.images[0]}

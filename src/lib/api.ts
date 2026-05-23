@@ -1,6 +1,4 @@
-import { supabase } from '@/integrations/supabase/client';
-
-// ==================== Error class ====================
+import { describeNetworkishFailure } from '@/lib/authMessages';
 
 export class ApiError extends Error {
   status: number;
@@ -13,8 +11,6 @@ export class ApiError extends Error {
     this.data = data;
   }
 }
-
-// ==================== Types (kept camelCase for frontend) ====================
 
 export interface User {
   id: string;
@@ -35,6 +31,7 @@ export interface Product {
   inStock: boolean;
   isNew: boolean;
   collection: string | null;
+  isPublished: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -52,8 +49,69 @@ export interface Workshop {
   description: string | null;
   includes: string[];
   level: string | null;
+  whatYouCreate: string | null;
+  takeHome: string | null;
+  resultImage: string | null;
+  isPublished: boolean;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export type WorkshopBookingStatus = 'pending_manager' | 'paid' | 'cancelled';
+
+export interface WorkshopBooking {
+  id: string;
+  userId: string;
+  workshopId: string;
+  workshopTitle: string;
+  workshopDate: string;
+  workshopTime: string;
+  selectedFormat: string;
+  level: string | null;
+  price: number;
+  paymentStatus: WorkshopBookingStatus;
+  customerName: string;
+  customerPhone: string;
+  customerEmail: string;
+  comment: string | null;
+  createdAt: string;
+}
+
+export interface CreateWorkshopBookingPayload {
+  workshopId: string;
+  selectedFormat: string;
+  customerName: string;
+  customerPhone: string;
+  customerEmail: string;
+  comment?: string;
+}
+
+export type GiftCertificatePaymentStatus = 'pending_manager' | 'paid' | 'cancelled';
+
+export interface GiftCertificateOrder {
+  id: string;
+  userId: string;
+  amount: number;
+  recipientName: string;
+  message: string | null;
+  customerName: string;
+  customerPhone: string;
+  customerEmail: string;
+  contactMethod: 'telegram' | 'max' | 'phone';
+  paymentStatus: GiftCertificatePaymentStatus;
+  comment: string | null;
+  createdAt: string;
+}
+
+export interface CreateGiftCertificateOrderPayload {
+  amount: number;
+  recipientName: string;
+  message?: string;
+  customerName: string;
+  customerPhone: string;
+  customerEmail: string;
+  contactMethod: 'telegram' | 'max' | 'phone';
+  comment?: string;
 }
 
 export type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
@@ -67,6 +125,18 @@ export interface Order {
   customerName: string;
   customerPhone: string;
   customerEmail: string;
+  customerType: 'individual' | 'legal';
+  deliveryMethod: string;
+  deliveryType: string;
+  city: string;
+  fullAddress: string | null;
+  recipientType: 'self' | 'other';
+  recipientName: string | null;
+  recipientPhone: string | null;
+  legalCompanyName: string | null;
+  legalInn: string | null;
+  contactMethod: 'telegram' | 'max' | 'phone';
+  paymentMethod: 'manager_confirmation';
   comment: string | null;
   createdAt: string;
   updatedAt: string;
@@ -76,12 +146,39 @@ export interface CreateOrderPayload {
   customerName: string;
   customerPhone: string;
   customerEmail: string;
+  customerType: 'individual' | 'legal';
+  deliveryMethod: string;
+  deliveryType: string;
+  city: string;
+  fullAddress?: string;
+  recipientType: 'self' | 'other';
+  recipientName?: string;
+  recipientPhone?: string;
+  legalCompanyName?: string;
+  legalInn?: string;
+  contactMethod: 'telegram' | 'max' | 'phone';
+  paymentMethod: 'manager_confirmation';
   comment?: string;
   items: unknown[];
   total: number;
 }
 
-// ==================== DB row ↔ frontend type mappers ====================
+export interface FeedbackRequest {
+  id: string;
+  userId: string | null;
+  name: string;
+  email: string;
+  message: string;
+  source: string;
+  createdAt: string;
+}
+
+export interface CreateFeedbackPayload {
+  name: string;
+  email: string;
+  message: string;
+  source?: string;
+}
 
 function dbProductToProduct(row: Record<string, unknown>): Product {
   return {
@@ -96,12 +193,13 @@ function dbProductToProduct(row: Record<string, unknown>): Product {
     inStock: row.in_stock as boolean,
     isNew: row.is_new as boolean,
     collection: (row.collection ?? null) as string | null,
+    isPublished: row.is_published !== false,
     createdAt: row.created_at as string,
     updatedAt: row.updated_at as string,
   };
 }
 
-function productToDb(p: Partial<Product>): Record<string, unknown> {
+function productToApiBody(p: Partial<Product>): Record<string, unknown> {
   const obj: Record<string, unknown> = {};
   if (p.id !== undefined) obj.id = p.id;
   if (p.name !== undefined) obj.name = p.name;
@@ -111,9 +209,10 @@ function productToDb(p: Partial<Product>): Record<string, unknown> {
   if (p.description !== undefined) obj.description = p.description;
   if (p.dimensions !== undefined) obj.dimensions = p.dimensions;
   if (p.care !== undefined) obj.care = p.care;
-  if (p.inStock !== undefined) obj.in_stock = p.inStock;
-  if (p.isNew !== undefined) obj.is_new = p.isNew;
+  if (p.inStock !== undefined) obj.inStock = p.inStock;
+  if (p.isNew !== undefined) obj.isNew = p.isNew;
   if (p.collection !== undefined) obj.collection = p.collection;
+  if (p.isPublished !== undefined) obj.isPublished = p.isPublished;
   return obj;
 }
 
@@ -131,12 +230,16 @@ function dbWorkshopToWorkshop(row: Record<string, unknown>): Workshop {
     description: (row.description ?? null) as string | null,
     includes: (row.includes ?? []) as string[],
     level: (row.level ?? null) as string | null,
+    whatYouCreate: (row.what_you_create ?? null) as string | null,
+    takeHome: (row.take_home ?? null) as string | null,
+    resultImage: (row.result_image ?? null) as string | null,
+    isPublished: row.is_published !== false,
     createdAt: row.created_at as string,
     updatedAt: row.updated_at as string,
   };
 }
 
-function workshopToDb(w: Partial<Workshop>): Record<string, unknown> {
+function workshopToApiBody(w: Partial<Workshop>): Record<string, unknown> {
   const obj: Record<string, unknown> = {};
   if (w.id !== undefined) obj.id = w.id;
   if (w.title !== undefined) obj.title = w.title;
@@ -145,12 +248,53 @@ function workshopToDb(w: Partial<Workshop>): Record<string, unknown> {
   if (w.duration !== undefined) obj.duration = w.duration;
   if (w.format !== undefined) obj.format = w.format;
   if (w.price !== undefined) obj.price = w.price;
-  if (w.maxParticipants !== undefined) obj.max_participants = w.maxParticipants;
-  if (w.currentParticipants !== undefined) obj.current_participants = w.currentParticipants;
+  if (w.maxParticipants !== undefined) obj.maxParticipants = w.maxParticipants;
+  if (w.currentParticipants !== undefined) obj.currentParticipants = w.currentParticipants;
   if (w.description !== undefined) obj.description = w.description;
   if (w.includes !== undefined) obj.includes = w.includes;
   if (w.level !== undefined) obj.level = w.level;
+  if (w.whatYouCreate !== undefined) obj.whatYouCreate = w.whatYouCreate;
+  if (w.takeHome !== undefined) obj.takeHome = w.takeHome;
+  if (w.resultImage !== undefined) obj.resultImage = w.resultImage;
+  if (w.isPublished !== undefined) obj.isPublished = w.isPublished;
   return obj;
+}
+
+function dbWorkshopBookingToWorkshopBooking(row: Record<string, unknown>): WorkshopBooking {
+  return {
+    id: row.id as string,
+    userId: row.user_id as string,
+    workshopId: row.workshop_id as string,
+    workshopTitle: row.workshop_title as string,
+    workshopDate: row.workshop_date as string,
+    workshopTime: row.workshop_time as string,
+    selectedFormat: row.selected_format as string,
+    level: (row.level ?? null) as string | null,
+    price: row.price as number,
+    paymentStatus: row.payment_status as WorkshopBookingStatus,
+    customerName: row.customer_name as string,
+    customerPhone: row.customer_phone as string,
+    customerEmail: row.customer_email as string,
+    comment: (row.comment ?? null) as string | null,
+    createdAt: row.created_at as string,
+  };
+}
+
+function dbGiftCertificateOrderToGiftCertificateOrder(row: Record<string, unknown>): GiftCertificateOrder {
+  return {
+    id: row.id as string,
+    userId: row.user_id as string,
+    amount: row.amount as number,
+    recipientName: row.recipient_name as string,
+    message: (row.message ?? null) as string | null,
+    customerName: row.customer_name as string,
+    customerPhone: row.customer_phone as string,
+    customerEmail: row.customer_email as string,
+    contactMethod: row.contact_method as 'telegram' | 'max' | 'phone',
+    paymentStatus: row.payment_status as GiftCertificatePaymentStatus,
+    comment: (row.comment ?? null) as string | null,
+    createdAt: row.created_at as string,
+  };
 }
 
 function dbOrderToOrder(row: Record<string, unknown>): Order {
@@ -163,243 +307,426 @@ function dbOrderToOrder(row: Record<string, unknown>): Order {
     customerName: row.customer_name as string,
     customerPhone: row.customer_phone as string,
     customerEmail: row.customer_email as string,
+    customerType: row.customer_type as 'individual' | 'legal',
+    deliveryMethod: row.delivery_method as string,
+    deliveryType: row.delivery_type as string,
+    city: row.city as string,
+    fullAddress: (row.full_address ?? null) as string | null,
+    recipientType: row.recipient_type as 'self' | 'other',
+    recipientName: (row.recipient_name ?? null) as string | null,
+    recipientPhone: (row.recipient_phone ?? null) as string | null,
+    legalCompanyName: (row.legal_company_name ?? null) as string | null,
+    legalInn: (row.legal_inn ?? null) as string | null,
+    contactMethod: row.contact_method as 'telegram' | 'max' | 'phone',
+    paymentMethod: row.payment_method as 'manager_confirmation',
     comment: (row.comment ?? null) as string | null,
     createdAt: row.created_at as string,
     updatedAt: row.updated_at as string,
   };
 }
 
-// ==================== Supabase-backed API client ====================
+function dbFeedbackToFeedback(row: Record<string, unknown>): FeedbackRequest {
+  return {
+    id: row.id as string,
+    userId: (row.user_id ?? null) as string | null,
+    name: row.name as string,
+    email: row.email as string,
+    message: row.message as string,
+    source: (row.source ?? 'website') as string,
+    createdAt: row.created_at as string,
+  };
+}
 
 class ApiClient {
-  // ---------- Auth ----------
+  private resolveInternalApiUrl(path: string): string {
+    if (path.startsWith('http://') || path.startsWith('https://')) return path;
+    const normalized = path.startsWith('/') ? path : `/${path}`;
+    if (typeof window !== 'undefined') {
+      return `${window.location.origin}${normalized}`;
+    }
+    const rw = process.env.RAILWAY_PUBLIC_DOMAIN?.trim();
+    const railwayPublic = rw
+      ? rw.startsWith('http://') || rw.startsWith('https://')
+        ? rw.replace(/\/$/, '')
+        : `https://${rw.replace(/\/$/, '')}`
+      : '';
+    const base =
+      process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') ||
+      process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') ||
+      railwayPublic ||
+      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : '') ||
+      `http://127.0.0.1:${process.env.PORT ?? '3000'}`;
+    return `${base}${normalized}`;
+  }
+
+  private mergeTimeoutSignal(userSignal: AbortSignal | null | undefined, timeoutMs: number): AbortSignal {
+    const timeoutSignal =
+      typeof AbortSignal !== 'undefined' && 'timeout' in AbortSignal && typeof AbortSignal.timeout === 'function'
+        ? AbortSignal.timeout(timeoutMs)
+        : undefined;
+    if (!timeoutSignal) {
+      const c = new AbortController();
+      setTimeout(() => c.abort(new DOMException('API request timeout', 'AbortError')), timeoutMs);
+      if (!userSignal) return c.signal;
+      if (userSignal.aborted) {
+        c.abort(new DOMException('Request already aborted', 'AbortError'));
+        return c.signal;
+      }
+      userSignal.addEventListener('abort', () => c.abort(new DOMException('Request cancelled', 'AbortError')), {
+        once: true,
+      });
+      return c.signal;
+    }
+    if (!userSignal) return timeoutSignal;
+    if (typeof AbortSignal !== 'undefined' && 'any' in AbortSignal && typeof AbortSignal.any === 'function') {
+      return AbortSignal.any([userSignal, timeoutSignal]);
+    }
+    const merged = new AbortController();
+    const abort = () => merged.abort(new DOMException('Request aborted (timeout or cancel)', 'AbortError'));
+    if (userSignal.aborted || timeoutSignal.aborted) {
+      abort();
+      return merged.signal;
+    }
+    userSignal.addEventListener('abort', abort, { once: true });
+    timeoutSignal.addEventListener('abort', abort, { once: true });
+    return merged.signal;
+  }
+
+  private async requestJson<T>(path: string, init?: RequestInit): Promise<T> {
+    const url = this.resolveInternalApiUrl(path);
+    const maxAttempts = 3;
+    const requestTimeoutMs = 40_000;
+    let lastNetworkError: unknown;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      try {
+        const response = await fetch(url, {
+          ...init,
+          credentials: 'include',
+          signal: this.mergeTimeoutSignal(init?.signal, requestTimeoutMs),
+          headers: {
+            ...(init?.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
+            ...(init?.headers ?? {}),
+          },
+          cache: 'no-store',
+        });
+
+        let body: { data?: T; error?: string } | null = null;
+        try {
+          body = await response.json();
+        } catch {
+          body = null;
+        }
+
+        if (!response.ok) {
+          throw new ApiError(body?.error ?? 'Ошибка запроса', response.status, body);
+        }
+
+        return (body?.data ?? body) as T;
+      } catch (err) {
+        if (err instanceof ApiError) throw err;
+        lastNetworkError = err;
+        if (attempt < maxAttempts - 1) {
+          await new Promise((r) => setTimeout(r, 350 * (attempt + 1)));
+          continue;
+        }
+      }
+    }
+
+    const raw = lastNetworkError instanceof Error ? lastNetworkError.message : String(lastNetworkError);
+    throw new ApiError(raw || 'Сеть недоступна', 503, lastNetworkError);
+  }
 
   async login(email: string, password: string) {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) throw new ApiError(error.message, 401);
-    const user = await this._buildUser(data.user.id, data.user.email!);
-    return { token: data.session.access_token, user };
+    try {
+      const data = await this.requestJson<{ user: User }>('/api/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ email: email.trim(), password }),
+      });
+      return data;
+    } catch (e) {
+      if (e instanceof ApiError) throw e;
+      throw new ApiError(describeNetworkishFailure(e), 503, e);
+    }
   }
 
   async register(email: string, password: string, name: string) {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { name } },
-    });
-    if (error) throw new ApiError(error.message, 400);
-    if (!data.session) throw new ApiError('Проверьте email для подтверждения регистрации', 400);
-    const user = await this._buildUser(data.user!.id, data.user!.email!);
-    return { token: data.session.access_token, user };
+    try {
+      const data = await this.requestJson<{ user: User }>('/api/auth/register', {
+        method: 'POST',
+        body: JSON.stringify({ email: email.trim(), password, name: name.trim() }),
+      });
+      return data;
+    } catch (e) {
+      if (e instanceof ApiError) throw e;
+      throw new ApiError(describeNetworkishFailure(e), 503, e);
+    }
   }
 
   async getMe(): Promise<{ user: User }> {
-    const { data: { user: authUser }, error } = await supabase.auth.getUser();
-    if (error || !authUser) throw new ApiError('Не авторизован', 401);
-    const user = await this._buildUser(authUser.id, authUser.email!);
-    return { user };
+    return this.requestJson<{ user: User }>('/api/auth/me');
   }
 
   async updateProfile(name: string): Promise<{ user: User }> {
-    const { data: { user: authUser } } = await supabase.auth.getUser();
-    if (!authUser) throw new ApiError('Не авторизован', 401);
-
-    const { error } = await supabase
-      .from('profiles')
-      .update({ name })
-      .eq('id', authUser.id);
-    if (error) throw new ApiError(error.message, 400);
-
-    return this.getMe();
+    return this.requestJson<{ user: User }>('/api/auth/profile', {
+      method: 'PATCH',
+      body: JSON.stringify({ name }),
+    });
   }
 
   async logout() {
-    await supabase.auth.signOut();
+    await this.requestJson<{ message: string }>('/api/auth/logout', { method: 'POST' });
     return { message: 'ok' };
   }
 
-  // ---------- Products ----------
-
   async getProducts(): Promise<Product[]> {
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .order('created_at', { ascending: false });
-    if (error) throw new ApiError(error.message, 500);
+    const data = await this.requestJson<Record<string, unknown>[]>('/api/products');
     return (data ?? []).map(dbProductToProduct);
   }
 
+  async getAdminProducts(): Promise<Product[]> {
+    const data = await this.requestJson<Record<string, unknown>[]>('/api/admin/products');
+    return (data ?? []).map(dbProductToProduct);
+  }
+
+  async setProductPublished(id: string, isPublished: boolean): Promise<Product> {
+    const data = await this.requestJson<Record<string, unknown>>(`/api/products/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ isPublished }),
+    });
+    return dbProductToProduct(data);
+  }
+
   async getProduct(id: string): Promise<Product> {
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .eq('id', id)
-      .single();
-    if (error) throw new ApiError(error.message, 404);
+    const data = await this.requestJson<Record<string, unknown>>(`/api/products/${id}`);
     return dbProductToProduct(data);
   }
 
   async createProduct(product: Omit<Product, 'createdAt' | 'updatedAt'>): Promise<Product> {
-    const { error } = await supabase
-      .from('products')
-      .insert(productToDb(product) as any);
-    if (error) {
-      if (error.code === '23505') throw new ApiError('Товар с таким ID уже существует', 409);
-      throw new ApiError(error.message, 400);
-    }
-    return { ...product, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() } as Product;
+    const data = await this.requestJson<Record<string, unknown>>('/api/products', {
+      method: 'POST',
+      body: JSON.stringify(productToApiBody(product)),
+    });
+    return dbProductToProduct(data);
   }
 
   async updateProduct(id: string, updates: Partial<Product>): Promise<Product> {
-    const { error } = await supabase
-      .from('products')
-      .update(productToDb(updates) as any)
-      .eq('id', id);
-    if (error) throw new ApiError(error.message, 400);
-    return { id, ...updates, updatedAt: new Date().toISOString() } as Product;
+    const data = await this.requestJson<Record<string, unknown>>(`/api/products/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(productToApiBody(updates)),
+    });
+    return dbProductToProduct(data);
   }
 
   async deleteProduct(id: string): Promise<{ message: string }> {
-    const { error } = await supabase.from('products').delete().eq('id', id);
-    if (error) throw new ApiError(error.message, 400);
-    return { message: 'Deleted' };
+    return this.requestJson<{ message: string }>(`/api/products/${id}`, { method: 'DELETE' });
   }
 
-  // ---------- Workshops ----------
-
   async getWorkshops(): Promise<Workshop[]> {
-    const { data, error } = await supabase
-      .from('workshops')
-      .select('*')
-      .order('created_at', { ascending: false });
-    if (error) throw new ApiError(error.message, 500);
+    const data = await this.requestJson<Record<string, unknown>[]>('/api/workshops');
     return (data ?? []).map(dbWorkshopToWorkshop);
   }
 
+  async getAdminWorkshops(): Promise<Workshop[]> {
+    const data = await this.requestJson<Record<string, unknown>[]>('/api/admin/workshops');
+    return (data ?? []).map(dbWorkshopToWorkshop);
+  }
+
+  async setWorkshopPublished(id: string, isPublished: boolean): Promise<Workshop> {
+    const data = await this.requestJson<Record<string, unknown>>(`/api/workshops/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ isPublished }),
+    });
+    return dbWorkshopToWorkshop(data);
+  }
+
   async getWorkshop(id: string): Promise<Workshop> {
-    const { data, error } = await supabase
-      .from('workshops')
-      .select('*')
-      .eq('id', id)
-      .single();
-    if (error) throw new ApiError(error.message, 404);
+    const data = await this.requestJson<Record<string, unknown>>(`/api/workshops/${id}`);
     return dbWorkshopToWorkshop(data);
   }
 
   async createWorkshop(workshop: Omit<Workshop, 'createdAt' | 'updatedAt'>): Promise<Workshop> {
-    const { error } = await supabase
-      .from('workshops')
-      .insert(workshopToDb(workshop) as any);
-    if (error) throw new ApiError(error.message, 400);
-    return { ...workshop, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() } as Workshop;
+    const data = await this.requestJson<Record<string, unknown>>('/api/workshops', {
+      method: 'POST',
+      body: JSON.stringify(workshopToApiBody(workshop)),
+    });
+    return dbWorkshopToWorkshop(data);
   }
 
   async updateWorkshop(id: string, updates: Partial<Workshop>): Promise<Workshop> {
-    const { error } = await supabase
-      .from('workshops')
-      .update(workshopToDb(updates) as any)
-      .eq('id', id);
-    if (error) throw new ApiError(error.message, 400);
-    return { id, ...updates, updatedAt: new Date().toISOString() } as Workshop;
+    const data = await this.requestJson<Record<string, unknown>>(`/api/workshops/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(workshopToApiBody(updates)),
+    });
+    return dbWorkshopToWorkshop(data);
   }
 
   async deleteWorkshop(id: string): Promise<{ message: string }> {
-    const { error } = await supabase.from('workshops').delete().eq('id', id);
-    if (error) throw new ApiError(error.message, 400);
-    return { message: 'Deleted' };
+    return this.requestJson<{ message: string }>(`/api/workshops/${id}`, { method: 'DELETE' });
   }
 
-  // ---------- Upload ----------
-
-  async uploadImage(file: File): Promise<{ url: string }> {
-    const ext = file.name.split('.').pop() ?? 'jpg';
-    const fileName = `${crypto.randomUUID()}.${ext}`;
-    const filePath = `products/${fileName}`;
-
-    const { error } = await supabase.storage
-      .from('images')
-      .upload(filePath, file, { contentType: file.type, upsert: false });
-    if (error) throw new ApiError(error.message, 400);
-
-    const { data } = supabase.storage.from('images').getPublicUrl(filePath);
-    return { url: data.publicUrl };
+  async createWorkshopBooking(payload: CreateWorkshopBookingPayload): Promise<{ booking: WorkshopBooking }> {
+    const data = await this.requestJson<Record<string, unknown>>('/api/workshop-bookings', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    return { booking: dbWorkshopBookingToWorkshopBooking(data) };
   }
 
-  // ---------- Orders ----------
+  async getMyWorkshopBookings(): Promise<{ bookings: WorkshopBooking[] }> {
+    const data = await this.requestJson<Record<string, unknown>[]>('/api/profile/workshop-bookings');
+    return { bookings: (data ?? []).map(dbWorkshopBookingToWorkshopBooking) };
+  }
+
+  async getAllWorkshopBookings(): Promise<{ bookings: WorkshopBooking[] }> {
+    const data = await this.requestJson<Record<string, unknown>[]>('/api/admin/workshop-bookings');
+    return { bookings: (data ?? []).map(dbWorkshopBookingToWorkshopBooking) };
+  }
+
+  async createGiftCertificateOrder(
+    payload: CreateGiftCertificateOrderPayload,
+  ): Promise<{ order: GiftCertificateOrder }> {
+    const data = await this.requestJson<Record<string, unknown>>('/api/gift-certificate-orders', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    return { order: dbGiftCertificateOrderToGiftCertificateOrder(data) };
+  }
+
+  async getMyGiftCertificateOrders(): Promise<{ orders: GiftCertificateOrder[] }> {
+    const data = await this.requestJson<Record<string, unknown>[]>('/api/profile/gift-certificate-orders');
+    return { orders: (data ?? []).map(dbGiftCertificateOrderToGiftCertificateOrder) };
+  }
+
+  async getMyProfileApplications(): Promise<{
+    orders: Order[];
+    workshopBookings: WorkshopBooking[];
+    giftCertificateOrders: GiftCertificateOrder[];
+  }> {
+    const [ordersData, bookingsData, giftsData] = await Promise.all([
+      this.requestJson<Record<string, unknown>[]>('/api/profile/orders'),
+      this.requestJson<Record<string, unknown>[]>('/api/profile/workshop-bookings'),
+      this.requestJson<Record<string, unknown>[]>('/api/profile/gift-certificate-orders'),
+    ]);
+
+    return {
+      orders: (ordersData ?? []).map(dbOrderToOrder),
+      workshopBookings: (bookingsData ?? []).map(dbWorkshopBookingToWorkshopBooking),
+      giftCertificateOrders: (giftsData ?? []).map(dbGiftCertificateOrderToGiftCertificateOrder),
+    };
+  }
+
+  async getAllGiftCertificateOrders(): Promise<{ orders: GiftCertificateOrder[] }> {
+    const data = await this.requestJson<Record<string, unknown>[]>('/api/admin/gift-certificate-orders');
+    return { orders: (data ?? []).map(dbGiftCertificateOrderToGiftCertificateOrder) };
+  }
+
+  async getAdminApplicationsBundle(): Promise<{
+    orders: Order[];
+    workshopBookings: WorkshopBooking[];
+    giftCertificateOrders: GiftCertificateOrder[];
+  }> {
+    const data = await this.requestJson<{
+      orders: Record<string, unknown>[];
+      workshopBookings: Record<string, unknown>[];
+      giftCertificateOrders: Record<string, unknown>[];
+    }>('/api/admin/applications');
+
+    return {
+      orders: (data.orders ?? []).map(dbOrderToOrder),
+      workshopBookings: (data.workshopBookings ?? []).map(dbWorkshopBookingToWorkshopBooking),
+      giftCertificateOrders: (data.giftCertificateOrders ?? []).map(dbGiftCertificateOrderToGiftCertificateOrder),
+    };
+  }
+
+  async uploadImage(file: File, folder = 'feia'): Promise<{ url: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('folder', folder);
+    return this.requestJson<{ url: string }>('/api/upload', {
+      method: 'POST',
+      body: formData,
+    });
+  }
 
   async createOrder(payload: CreateOrderPayload): Promise<{ order: Order }> {
-    const { data: { user: authUser } } = await supabase.auth.getUser();
-
-    const { data, error } = await supabase
-      .from('orders')
-      .insert({
-        user_id: authUser?.id ?? null,
-        customer_name: payload.customerName,
-        customer_phone: payload.customerPhone,
-        customer_email: payload.customerEmail,
-        comment: payload.comment ?? null,
-        items: payload.items as any,
-        total: payload.total,
-      } as any)
-      .select()
-      .single();
-    if (error) throw new ApiError(error.message, 400);
+    const data = await this.requestJson<Record<string, unknown>>('/api/orders', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
     return { order: dbOrderToOrder(data) };
   }
 
   async getMyOrders(): Promise<{ orders: Order[] }> {
-    const { data: { user: authUser } } = await supabase.auth.getUser();
-    if (!authUser) throw new ApiError('Не авторизован', 401);
-
-    const { data, error } = await supabase
-      .from('orders')
-      .select('*')
-      .eq('user_id', authUser.id)
-      .order('created_at', { ascending: false });
-    if (error) throw new ApiError(error.message, 500);
+    const data = await this.requestJson<Record<string, unknown>[]>('/api/profile/orders');
     return { orders: (data ?? []).map(dbOrderToOrder) };
   }
 
   async getAllOrders(): Promise<{ orders: Order[] }> {
-    const { data, error } = await supabase
-      .from('orders')
-      .select('*')
-      .order('created_at', { ascending: false });
-    if (error) throw new ApiError(error.message, 500);
+    const data = await this.requestJson<Record<string, unknown>[]>('/api/admin/orders');
     return { orders: (data ?? []).map(dbOrderToOrder) };
   }
 
   async updateOrderStatus(id: string, status: Order['status']): Promise<{ order: Order }> {
-    const { data, error } = await supabase
-      .from('orders')
-      .update({ status })
-      .eq('id', id)
-      .select()
-      .single();
-    if (error) throw new ApiError(error.message, 400);
+    const data = await this.requestJson<Record<string, unknown>>(`/api/admin/orders/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
+    });
     return { order: dbOrderToOrder(data) };
   }
 
-  // ---------- Private helpers ----------
+  async updateWorkshopBookingPaymentStatus(
+    id: string,
+    paymentStatus: WorkshopBookingStatus,
+  ): Promise<{ booking: WorkshopBooking }> {
+    const data = await this.requestJson<Record<string, unknown>>(`/api/admin/workshop-bookings/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ paymentStatus }),
+    });
+    return { booking: dbWorkshopBookingToWorkshopBooking(data) };
+  }
 
-  private async _buildUser(id: string, email: string): Promise<User> {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('name')
-      .eq('id', id)
-      .single();
+  async updateGiftCertificateOrderPaymentStatus(
+    id: string,
+    paymentStatus: GiftCertificatePaymentStatus,
+  ): Promise<{ order: GiftCertificateOrder }> {
+    const data = await this.requestJson<Record<string, unknown>>(`/api/admin/gift-certificate-orders/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ paymentStatus }),
+    });
+    return { order: dbGiftCertificateOrderToGiftCertificateOrder(data) };
+  }
 
-    const { data: roles } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', id);
+  async deleteOrder(id: string): Promise<{ message: string }> {
+    return this.requestJson<{ message: string }>(`/api/admin/orders/${id}`, { method: 'DELETE' });
+  }
 
-    return {
-      id,
-      email,
-      name: profile?.name ?? null,
-      roles: (roles ?? []).map(r => r.role),
-    };
+  async deleteWorkshopBooking(id: string): Promise<{ message: string }> {
+    return this.requestJson<{ message: string }>(`/api/admin/workshop-bookings/${id}`, { method: 'DELETE' });
+  }
+
+  async deleteGiftCertificateOrder(id: string): Promise<{ message: string }> {
+    return this.requestJson<{ message: string }>(`/api/admin/gift-certificate-orders/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async createFeedback(payload: CreateFeedbackPayload): Promise<{ feedback: FeedbackRequest }> {
+    const row = await this.requestJson<Record<string, unknown>>('/api/feedback', {
+      method: 'POST',
+      body: JSON.stringify({
+        name: payload.name,
+        email: payload.email,
+        message: payload.message,
+        source: payload.source ?? 'contacts_form',
+      }),
+    });
+    return { feedback: dbFeedbackToFeedback(row) };
+  }
+
+  async getAllFeedback(): Promise<{ feedback: FeedbackRequest[] }> {
+    const data = await this.requestJson<Record<string, unknown>[]>('/api/admin/feedback');
+    return { feedback: (data ?? []).map(dbFeedbackToFeedback) };
   }
 }
 

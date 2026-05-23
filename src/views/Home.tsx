@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { ProductCard } from '@/components/Shop/ProductCard';
 import { Product } from '@/context/StoreContext';
 import { useScrollAnimation } from '@/hooks/useScrollAnimation';
-import heroImage from '@/assets/hero-pottery.jpg';
+import heroImage from '@/assets/hero-new.jpg';
 import categoryDishes from '@/assets/category-dishes.jpg';
 import categoryDecor from '@/assets/category-decor.jpg';
 import categoryPots from '@/assets/category-pots.jpg';
@@ -16,6 +16,7 @@ import teamMain from '@/assets/team-main.jpg';
 import teamCollage1 from '@/assets/team-collage-1.jpg';
 import teamCollage2 from '@/assets/team-collage-2.jpg';
 import { api } from '@/lib/api';
+import { useParallaxBanner } from '@/hooks/useParallaxBanner';
 
 export default function Home() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
@@ -32,7 +33,8 @@ export default function Home() {
   const newProductsAnimation = useScrollAnimation(0.1);
   const categoriesAnimation = useScrollAnimation(0.1);
   const ctaAnimation = useScrollAnimation(0.1);
-  
+  const { containerRef: heroParallaxRef, imageStyle: heroImageParallaxStyle } = useParallaxBanner<HTMLDivElement>(0.32, 1.12);
+
   const categories = [
     { name: 'Посуда', href: '/catalog?category=Посуда', image: categoryDishes.src },
     { name: 'Декор', href: '/catalog?category=Декор', image: categoryDecor.src },
@@ -43,36 +45,29 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="py-16 bg-background">
-        <div className="container mx-auto px-4">
-          <div className="relative rounded-2xl overflow-hidden pottery-shadow-hero">
+      <section className="bg-background">
+        <div ref={heroParallaxRef} className="relative overflow-hidden">
             <img 
               src={heroImage.src}
-              alt="Ручная керамика Feia"
-              className="w-full h-[500px] object-cover"
+              alt="Руки в глине во время создания керамики"
+              className="w-full h-screen object-cover origin-center"
+              style={heroImageParallaxStyle}
             />
-            <div className="absolute inset-0 bg-black/40" />
+            <div className="absolute inset-0 bg-black/45" />
             
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full px-8 md:px-12">
-                <div className="flex flex-col md:flex-row items-center justify-between">
-                  {/* Left Content */}
-                  <div className="text-white mb-8 md:mb-0 md:max-w-lg">
-                    <div className="mb-4">
-                      <h1 className="text-2xl font-serif font-bold mb-2 animate-fade-in">Feia</h1>
-                      <p className="text-4xl md:text-5xl font-serif font-bold leading-tight animate-fade-in">
-                        Ручная керамика<br />
-                        <span className="text-white/80">с душой</span>
-                      </p>
-                    </div>
-                  </div>
-                  
-                  {/* Right Content */}
-                  <div className="text-center">
-                    <Link href="/catalog">
-                      <Button size="lg" className="sage-gradient animate-fade-in pottery-shadow-hero text-lg px-8 py-3">
-                        Каталог
-                        <ArrowRight className="ml-2 w-5 h-5" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-full container mx-auto px-6 md:px-12 flex justify-center">
+                <div className="max-w-3xl w-full text-white text-center -translate-y-6 md:-translate-y-12 lg:-translate-y-16">
+                  <p className="text-sm md:text-base uppercase tracking-[0.22em] text-white/80 mb-4 animate-fade-in">
+                    Фея Керамика
+                  </p>
+                  <h1 className="text-3xl md:text-5xl lg:text-6xl font-serif font-medium leading-tight animate-fade-in">
+                    Керамика ручной работы и мастер-классы в гостях у "Феи"
+                  </h1>
+                  <div className="mt-8 flex justify-center">
+                    <Link href="/workshops">
+                      <Button size="lg" className="sage-gradient animate-fade-in text-base md:text-lg px-7 py-3">
+                        Записаться на мастер-класс
                       </Button>
                     </Link>
                   </div>
@@ -80,38 +75,33 @@ export default function Home() {
               </div>
             </div>
           </div>
-        </div>
       </section>
 
       {/* Philosophy Section */}
       <section 
         ref={aboutAnimation.elementRef}
-        className={`py-16 bg-background ${aboutAnimation.isVisible ? 'animate-fade-in-up' : ''}`}
+        className={`py-24 bg-background ${aboutAnimation.isVisible ? 'animate-fade-in-up' : ''}`}
       >
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             {/* Main Team Photo */}
             <div className="lg:col-span-5">
-              <img 
+              <img
                 src={teamMain.src}
-                alt="Команда Feia в мастерской"
-                className="w-full h-[600px] object-cover rounded-lg pottery-shadow"
+                alt="Команда Фея в мастерской"
+                className="w-full h-[600px] object-cover"
               />
             </div>
             
             {/* Text Content */}
             <div className="lg:col-span-4 space-y-6">
               <div className="text-center">
-                <h2 className="text-xl md:text-2xl font-serif font-bold text-pottery-sage mb-4">
-                  НАША КЕРАМИКА ДАРИТ НЕЗАБЫВАЕМЫЕ ЭМОЦИИ И ЛЮБОВЬ!
+                <h2 className="text-2xl md:text-3xl font-serif font-medium text-foreground mb-6">
+                  Тихая эстетика ручной керамики
                 </h2>
-                <div className="flex items-center justify-center gap-2 mb-6">
-                  <span className="text-red-500">❤️</span>
-                  <span className="font-serif italic text-pottery-sage">Feia ceramica</span>
-                </div>
               </div>
               
-              <p className="text-foreground leading-relaxed text-center">
+              <p className="text-muted-foreground leading-relaxed text-center">
                 Наш дизайн — это простые неровные формы и наивные рисунки, которые возвращают в детство, 
                 когда мы рисовали как чувствовали, а не как правильно.
               </p>
@@ -119,15 +109,15 @@ export default function Home() {
             
             {/* Photo Collage */}
             <div className="lg:col-span-3 space-y-4">
-              <img 
+              <img
                 src={teamCollage1.src}
                 alt="Люди с керамическими изделиями"
-                className="w-full h-48 object-cover rounded-lg pottery-shadow"
+                className="w-full h-48 object-cover"
               />
-              <img 
+              <img
                 src={teamCollage2.src}
                 alt="Выбор керамики с полки"
-                className="w-full h-60 object-cover rounded-lg pottery-shadow"
+                className="w-full h-60 object-cover"
               />
             </div>
           </div>
@@ -138,14 +128,11 @@ export default function Home() {
       {featuredProducts.length > 0 && (
         <section 
           ref={newProductsAnimation.elementRef}
-          className={`py-16 ${newProductsAnimation.isVisible ? 'animate-fade-in-up' : ''}`}
+          className={`py-24 ${newProductsAnimation.isVisible ? 'animate-fade-in-up' : ''}`}
         >
           <div className="container mx-auto px-4">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-serif font-bold mb-4">Новинки</h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Свежие поступления керамики, созданные с особой любовью и вниманием к деталям
-              </p>
+            <div className="text-center mb-14">
+              <h2 className="text-3xl md:text-4xl font-serif font-medium mb-4">Новинки</h2>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
@@ -158,7 +145,6 @@ export default function Home() {
               <Link href="/catalog">
                 <Button variant="outline" size="lg">
                   Смотреть весь каталог
-                  <ArrowRight className="ml-2 w-4 h-4" />
                 </Button>
               </Link>
             </div>
@@ -169,10 +155,10 @@ export default function Home() {
       {/* Categories Section */}
       <section 
         ref={categoriesAnimation.elementRef}
-        className={`py-16 bg-secondary ${categoriesAnimation.isVisible ? 'animate-fade-in-up' : ''}`}
+        className={`py-24 bg-background ${categoriesAnimation.isVisible ? 'animate-fade-in-up' : ''}`}
       >
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-serif font-bold text-center mb-12">Категории</h2>
+          <h2 className="text-3xl md:text-4xl font-serif font-medium text-center mb-14">Категории</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {categories.map((category) => (
@@ -181,7 +167,7 @@ export default function Home() {
                 href={category.href}
                 className="group cursor-pointer"
               >
-                <div className="relative aspect-[4/5] overflow-hidden rounded-lg pottery-shadow mb-4">
+                <div className="relative aspect-[4/5] overflow-hidden mb-4">
                   <img
                     src={category.image}
                     alt={category.name}
@@ -197,23 +183,24 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section 
+      {/* Мастер-классы — короткий акцент без тяжёлого фона */}
+      <section
         ref={ctaAnimation.elementRef}
-        className={`py-16 bg-[hsl(var(--pottery-sage))] ${ctaAnimation.isVisible ? 'animate-fade-in-up' : ''}`}
+        className={`border-t border-border/50 py-14 md:py-20 bg-background ${ctaAnimation.isVisible ? 'animate-fade-in-up' : ''}`}
       >
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-serif font-bold text-white mb-6">
-            Создайте что-то особенное
+        <div className="container mx-auto px-4 max-w-2xl text-center">
+          <h2 className="text-2xl md:text-3xl font-serif font-medium text-foreground tracking-tight">
+            Мастер-классы
           </h2>
-          <p className="text-lg text-white/90 mb-8 max-w-2xl mx-auto">
-            Присоединяйтесь к нашим мастер-классам и научитесь создавать уникальную керамику своими руками
+          <p className="mt-3 text-sm md:text-base text-muted-foreground leading-relaxed">
+            Расписание и запись на сайте — после заявки менеджер подтвердит время и формат.
           </p>
-          <Link href="/workshops">
-            <Button size="lg" variant="secondary" className="pottery-shadow-hero">
-              Записаться на мастер-класс
-              <ArrowRight className="ml-2 w-5 h-5" />
-            </Button>
+          <Link
+            href="/workshops"
+            className="mt-8 inline-flex items-center gap-2 text-sm uppercase tracking-wide text-foreground border-b border-foreground/35 pb-0.5 hover:border-foreground transition-colors"
+          >
+            К расписанию
+            <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
       </section>

@@ -90,9 +90,10 @@ export default function Catalog() {
         </p>
       </div>
 
-      {/* Filters */}
-      <div className="bg-secondary/50 rounded-lg p-6 mb-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+      {/* Filters — без заливки, только обводка */}
+      <div className="mb-8 rounded-lg border-2 border-[hsl(var(--pottery-sage))]/35 p-3 md:p-4 shadow-none">
+        <div className="rounded-md border border-[hsl(var(--pottery-sage))]/25 px-4 py-5 md:px-5 md:py-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
           {/* Search */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
@@ -139,10 +140,10 @@ export default function Catalog() {
           >
             Только новинки
           </Button>
-        </div>
+          </div>
 
-        {/* Active Filters */}
-        {(selectedCategory || showOnlyNew || searchQuery) && (
+          {/* Active Filters */}
+          {(selectedCategory || showOnlyNew || searchQuery) && (
           <div className="flex flex-wrap gap-2">
             <span className="text-sm text-muted-foreground">Активные фильтры:</span>
             {selectedCategory && (
@@ -176,7 +177,8 @@ export default function Catalog() {
               </Button>
             )}
           </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Products Grid */}

@@ -24,12 +24,10 @@ export function CartModal() {
 
   if (!state.isCartOpen) return null;
 
-  const totalAmount = state.cart.reduce((sum, item) => {
-    if ('type' in item && item.type === 'giftCard') {
-      return sum + item.amount * item.quantity;
-    }
-    return sum + (item as Product & { quantity: number }).price * item.quantity;
-  }, 0);
+  const totalAmount = state.cart.reduce(
+    (sum, item) => sum + (item as Product & { quantity: number }).price * item.quantity,
+    0,
+  );
 
   const handleQuantityChange = (id: string, newQuantity: number) => {
     if (newQuantity <= 0) {
@@ -88,29 +86,18 @@ export function CartModal() {
               <div className="space-y-4 mb-6">
                 {state.cart.map((item) => (
                   <div key={item.id} className="flex gap-3 p-3 bg-accent/50 rounded-lg">
-                    {('type' in item && item.type === 'giftCard') ? (
-                      <div className="w-16 h-16 bg-gradient-to-br from-pottery-sage to-pottery-sageLight rounded-lg flex items-center justify-center">
-                        <span className="text-white text-xs font-bold">GIFT</span>
-                      </div>
-                    ) : (
-                      <img
-                        src={(item as Product & { quantity: number }).images[0]}
-                        alt={(item as Product & { quantity: number }).name}
-                        className="w-16 h-16 object-cover rounded-lg"
-                      />
-                    )}
-                    
+                    <img
+                      src={(item as Product & { quantity: number }).images[0]}
+                      alt={(item as Product & { quantity: number }).name}
+                      className="w-16 h-16 object-cover rounded-lg"
+                    />
+
                     <div className="flex-1 min-w-0">
                       <h3 className="font-medium text-sm mb-1 truncate">
-                        {('type' in item && item.type === 'giftCard') ? `Сертификат на ${item.amount}₽` : (item as Product & { quantity: number }).name}
+                        {(item as Product & { quantity: number }).name}
                       </h3>
-                      {('type' in item && item.type === 'giftCard') && (
-                        <p className="text-xs text-muted-foreground mb-1">
-                          Для: {item.recipientName}
-                        </p>
-                      )}
                       <p className="text-sm font-semibold text-primary">
-                        {('type' in item && item.type === 'giftCard') ? item.amount : (item as Product & { quantity: number }).price}₽
+                        {(item as Product & { quantity: number }).price}₽
                       </p>
                       
                       {/* Quantity Controls */}
@@ -119,7 +106,7 @@ export function CartModal() {
                           variant="outline"
                           size="sm"
                           onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                          className="w-7 h-7 p-0"
+                          className="w-7 h-7 p-0 rounded-full"
                         >
                           <Minus className="w-3 h-3" />
                         </Button>
@@ -128,7 +115,7 @@ export function CartModal() {
                           variant="outline"
                           size="sm"
                           onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                          className="w-7 h-7 p-0"
+                          className="w-7 h-7 p-0 rounded-full"
                         >
                           <Plus className="w-3 h-3" />
                         </Button>

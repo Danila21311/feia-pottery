@@ -1,18 +1,56 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, X, ShoppingCart, Heart, Settings, UserCircle, LogIn } from 'lucide-react';
 import { useStore } from '@/context/StoreContext';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [headerHidden, setHeaderHidden] = useState(false);
+  const lastScrollY = useRef(0);
   const { state, dispatch } = useStore();
   const { user, isAdmin } = useAuth();
   const pathname = usePathname();
+
+  useEffect(() => {
+    lastScrollY.current = typeof window !== 'undefined' ? window.scrollY : 0;
+  }, [pathname]);
+
+  useEffect(() => {
+    const onScroll = () => {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        setHeaderHidden(false);
+        lastScrollY.current = window.scrollY;
+        return;
+      }
+      if (isMobileMenuOpen) {
+        setHeaderHidden(false);
+        lastScrollY.current = window.scrollY;
+        return;
+      }
+      const y = window.scrollY;
+      const delta = y - lastScrollY.current;
+      lastScrollY.current = y;
+
+      if (y < 24) {
+        setHeaderHidden(false);
+        return;
+      }
+      if (delta > 6) {
+        setHeaderHidden(true);
+      } else if (delta < -6) {
+        setHeaderHidden(false);
+      }
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [isMobileMenuOpen]);
 
   const navigation = [
     { name: 'Каталог', href: '/catalog' },
@@ -26,7 +64,13 @@ export function Header() {
   const wishlistCount = state.wishlist.length;
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
+    <header
+      className={cn(
+        'fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border',
+        'transition-transform duration-300 ease-out motion-reduce:transition-none',
+        headerHidden && !isMobileMenuOpen ? '-translate-y-full' : 'translate-y-0',
+      )}
+    >
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -34,7 +78,7 @@ export function Header() {
             href="/" 
             className="text-2xl font-serif font-semibold text-primary hover:text-pottery-sage transition-colors"
           >
-            Feia
+            Фея
           </Link>
 
           {/* Desktop Navigation */}
