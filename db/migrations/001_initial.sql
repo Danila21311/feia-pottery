@@ -1,4 +1,4 @@
--- Feia Crafts Studio — PostgreSQL schema (Railway)
+-- Гончарная мастерская «Фея» — PostgreSQL schema (Railway)
 
 create type public.order_status as enum (
   'pending',
