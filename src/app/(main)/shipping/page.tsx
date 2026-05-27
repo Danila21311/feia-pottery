@@ -1,5 +1,5 @@
-﻿import Shipping from '@/views/Shipping';
+﻿import { redirect } from 'next/navigation';
 
 export default function ShippingPage() {
-  return <Shipping />;
+  redirect('/delivery');
 }

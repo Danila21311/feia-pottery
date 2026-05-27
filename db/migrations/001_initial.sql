@@ -88,7 +88,7 @@ create table public.orders (
   customer_email text not null,
   comment text,
   customer_type text not null default 'individual' check (customer_type in ('individual', 'legal')),
-  delivery_method text not null default 'pickup_moscow',
+  delivery_method text not null default 'pickup_orenburg',
   delivery_type text not null default 'address' check (delivery_type in ('address', 'pickup_point')),
   city text not null default '',
   full_address text,

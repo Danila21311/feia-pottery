@@ -18,7 +18,7 @@ export async function createOrder(data: Record<string, unknown>): Promise<OrderR
       data.customer_phone,
       data.customer_email,
       data.customer_type ?? 'individual',
-      data.delivery_method ?? 'pickup_moscow',
+      data.delivery_method ?? 'pickup_orenburg',
       data.delivery_type ?? 'address',
       data.city ?? '',
       data.full_address ?? null,

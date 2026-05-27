@@ -7,6 +7,7 @@ import { Menu, X, ShoppingCart, Heart, Settings, UserCircle, LogIn } from 'lucid
 import { useStore } from '@/context/StoreContext';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
+import { Logo } from '@/components/Layout/Logo';
 import { cn } from '@/lib/utils';
 
 export function Header() {
@@ -73,12 +74,12 @@ export function Header() {
     >
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link 
-            href="/" 
-            className="text-2xl font-serif font-semibold text-primary hover:text-pottery-sage transition-colors"
+          <Link
+            href="/"
+            className="inline-flex shrink-0 items-center opacity-90 transition-opacity hover:opacity-100"
+            aria-label="На главную"
           >
-            Фея
+            <Logo variant="header" />
           </Link>
 
           {/* Desktop Navigation */}

@@ -1,11 +1,12 @@
 import { MapPin, Phone, Mail } from 'lucide-react';
 import Link from 'next/link';
+import { Logo } from '@/components/Layout/Logo';
+import { WORKSHOP_ADDRESS, WORKSHOP_HOURS } from '@/lib/workshopInfo';
 
 export function Footer() {
   const footerLinks = [
     { name: 'Политика конфиденциальности', href: '/privacy' },
     { name: 'Публичная оферта', href: '/terms' },
-    { name: 'Условия доставки', href: '/shipping' },
     { name: 'Доставка и оплата', href: '/delivery' },
   ];
 
@@ -15,7 +16,9 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           
           <div>
-            <h3 className="text-2xl font-serif font-semibold text-primary mb-4">Фея</h3>
+            <Link href="/" className="inline-flex mb-4" aria-label="На главную">
+              <Logo variant="footer" />
+            </Link>
             <p className="text-muted-foreground mb-4">
               Мастерская уникальной керамики ручной работы. Каждое изделие создается с любовью 
               из натуральной глины и несет частичку души мастера.
@@ -28,8 +31,10 @@ export function Footer() {
               <div className="flex items-start space-x-3">
                 <MapPin className="w-5 h-5 text-muted-foreground mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="text-sm">Звёздный проспект, 26, 2 этаж</p>
-                  <p className="text-sm text-muted-foreground">Мастерская Фея</p>
+                  <p className="text-sm">{WORKSHOP_ADDRESS.street}</p>
+                  <p className="text-sm text-muted-foreground">{WORKSHOP_ADDRESS.settlement}</p>
+                  <p className="text-sm text-muted-foreground">{WORKSHOP_ADDRESS.region}</p>
+                  <p className="text-sm text-muted-foreground">{WORKSHOP_ADDRESS.floor}</p>
                 </div>
               </div>
               <div className="flex items-center space-x-3">
@@ -51,17 +56,13 @@ export function Footer() {
           <div>
             <h4 className="font-serif font-semibold text-lg mb-4">Часы работы</h4>
             <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span>Понедельник - Пятница:</span>
-                <span>10:00 - 19:00</span>
+              <div className="flex justify-between gap-4">
+                <span>{WORKSHOP_HOURS.weekdaysLabel}</span>
+                <span>{WORKSHOP_HOURS.weekdays}</span>
               </div>
-              <div className="flex justify-between">
-                <span>Суббота:</span>
-                <span>11:00 - 17:00</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Воскресенье:</span>
-                <span className="text-muted-foreground">Выходной</span>
+              <div className="flex justify-between gap-4">
+                <span>{WORKSHOP_HOURS.weekendLabel}</span>
+                <span>{WORKSHOP_HOURS.weekend}</span>
               </div>
             </div>
           </div>

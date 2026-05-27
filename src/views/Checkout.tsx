@@ -22,6 +22,11 @@ import {
   minimalSelectClass,
   minimalTextareaClass,
 } from '@/lib/formFieldStyles';
+import {
+  DELIVERY_METHOD_OPTIONS,
+  WORKSHOP_ADDRESS,
+  type DeliveryMethodId,
+} from '@/lib/workshopInfo';
 
 interface CustomerData {
   lastName: string;
@@ -37,7 +42,7 @@ interface CustomerData {
   recipientPhone: string;
   comment: string;
   customerType: 'individual' | 'legal';
-  deliveryMethod: 'cdek' | 'vozovoz' | 'pek' | 'courier_moscow' | 'pickup_moscow' | 'ozon';
+  deliveryMethod: DeliveryMethodId;
   deliveryType: 'address' | 'pickup_point';
   recipientType: 'self' | 'other';
   contactMethod: 'telegram' | 'max' | 'phone';
@@ -94,7 +99,7 @@ export default function Checkout() {
   });
 
   const deliveryInfo = {
-    address: 'Звёздный проспект, 26, 2 этаж (Мастерская Фея)',
+    address: `${WORKSHOP_ADDRESS.full}, ${WORKSHOP_ADDRESS.floor}`,
     cost: 0,
   };
 
@@ -397,19 +402,12 @@ export default function Checkout() {
                 )}
               </div>
               <div className="space-y-2">
-                {[
-                  ['cdek', 'Сдэк'],
-                  ['vozovoz', 'Возовоз'],
-                  ['pek', 'ПЭК'],
-                  ['courier_moscow', 'Доставка курьером по Москве'],
-                  ['pickup_moscow', 'Самовывоз в Москве'],
-                  ['ozon', 'Озон посылка'],
-                ].map(([value, label]) => (
+                {DELIVERY_METHOD_OPTIONS.map(({ value, label }) => (
                   <label key={value} className="flex items-center gap-2 text-sm">
                     <input
                       type="radio"
                       checked={customerData.deliveryMethod === value}
-                      onChange={() => setCustomerData(prev => ({ ...prev, deliveryMethod: value as CustomerData['deliveryMethod'] }))}
+                      onChange={() => setCustomerData(prev => ({ ...prev, deliveryMethod: value }))}
                     />
                     {label}
                   </label>
