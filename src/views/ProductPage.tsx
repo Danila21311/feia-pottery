@@ -201,22 +201,25 @@ export default function ProductPage() {
           </div>
 
           {/* Actions */}
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+          <div className="flex gap-3">
             <Button
               onClick={handleAddToCart}
               disabled={!product.inStock}
-              className="flex-1 sage-gradient w-full"
+              className="flex min-w-0 flex-1 sage-gradient px-3 sm:px-6 whitespace-normal sm:whitespace-nowrap"
               size="lg"
             >
-              <ShoppingCart className="w-5 h-5 mr-2" />
-              {isInCart ? 'Добавить еще' : 'Добавить в корзину'}
+              <ShoppingCart className="w-5 h-5 shrink-0" />
+              <span className="truncate">
+                {isInCart ? 'Добавить еще' : 'Добавить в корзину'}
+              </span>
             </Button>
-            
+
             <Button
               variant="outline"
-              size="lg"
+              size="icon"
               onClick={handleWishlistToggle}
-              className={isInWishlist ? 'text-red-500 border-red-500 w-full sm:w-auto' : 'w-full sm:w-auto'}
+              className={`h-11 w-11 shrink-0 ${isInWishlist ? 'text-red-500 border-red-500' : ''}`}
+              aria-label={isInWishlist ? 'Убрать из избранного' : 'Добавить в избранное'}
             >
               <Heart className={`w-5 h-5 ${isInWishlist ? 'fill-current' : ''}`} />
             </Button>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, ShoppingBag, Truck, MessageCircle } from 'lucide-react';
@@ -104,6 +104,7 @@ export default function Checkout() {
   };
 
   const [isLoading, setIsLoading] = useState(false);
+  const orderSubmittedRef = useRef(false);
   const [citySuggestions, setCitySuggestions] = useState<SuggestionItem[]>([]);
   const [addressSuggestions, setAddressSuggestions] = useState<SuggestionItem[]>([]);
   const [showCitySuggestions, setShowCitySuggestions] = useState(false);
@@ -112,7 +113,7 @@ export default function Checkout() {
   const [isAddressLoading, setIsAddressLoading] = useState(false);
 
   useEffect(() => {
-    if (state.cart.length === 0) {
+    if (state.cart.length === 0 && !orderSubmittedRef.current) {
       router.push('/catalog');
     }
   }, [state.cart.length, router]);
@@ -222,10 +223,11 @@ export default function Checkout() {
         total: finalTotal,
       });
 
+      orderSubmittedRef.current = true;
+      router.replace('/checkout/success');
       dispatch({ type: 'CLEAR_CART' });
       localStorage.setItem('feiaCart', '[]');
       localStorage.removeItem('currentOrder');
-      router.push('/checkout/success');
     } catch (error) {
       console.error('Ошибка при оформлении заказа:', error);
       toast.error(getCheckoutErrorMessage(error));
@@ -234,7 +236,15 @@ export default function Checkout() {
     }
   };
 
-  if (state.cart.length === 0) return null;
+  if (state.cart.length === 0 && !orderSubmittedRef.current) return null;
+
+  if (orderSubmittedRef.current) {
+    return (
+      <div className="container mx-auto px-4 py-16 max-w-2xl text-center text-muted-foreground">
+        Заявка отправлена, перенаправление…
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
